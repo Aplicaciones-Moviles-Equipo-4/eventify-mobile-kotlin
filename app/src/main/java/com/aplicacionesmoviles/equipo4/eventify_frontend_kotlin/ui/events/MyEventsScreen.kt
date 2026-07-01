@@ -38,6 +38,9 @@ fun MyEventsScreen(
 
     MyEventsContent(
         onEventClick = onEventClick,
+        onCreateEvent = { title, place, date, customer ->
+            viewModel.createEvent(title, place, date, customer) {}
+        },
         isLoading = viewModel.isLoading,
         events = viewModel.socialEvents
     )
@@ -46,14 +49,37 @@ fun MyEventsScreen(
 @Composable
 fun MyEventsContent(
     onEventClick: (String) -> Unit,
+    onCreateEvent: (String, String, String, String) -> Unit,
     isLoading: Boolean,
     events: List<SocialEvent>
 ) {
+    var showCreateDialog by remember { mutableStateOf(false) }
+
+    if (showCreateDialog) {
+        CreateEventDialog(
+            onDismiss = { showCreateDialog = false },
+            onCreate = { title, place, date, customer ->
+                onCreateEvent(title, place, date, customer)
+                showCreateDialog = false
+            }
+        )
+    }
+
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ) {
         Scaffold(
+            floatingActionButton = {
+                FloatingActionButton(
+                    onClick = { showCreateDialog = true },
+                    containerColor = Color(0xFF2E2E8F),
+                    contentColor = Color.White,
+                    shape = CircleShape
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = "Nuevo evento")
+                }
+            }
         ) { innerPadding ->
             if (isLoading) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -74,7 +100,7 @@ fun MyEventsContent(
                         EmptyState(
                             icon = Icons.Default.CalendarToday,
                             title = "Aún no hay eventos",
-                            message = "Los eventos sociales asociados a tu cuenta aparecerán aquí."
+                            message = "Pulsa + para registrar tu primer evento social."
                         )
                     } else {
                         EventList(events = events, onEventClick = onEventClick)
@@ -83,6 +109,38 @@ fun MyEventsContent(
             }
         }
     }
+}
+
+@Composable
+private fun CreateEventDialog(
+    onDismiss: () -> Unit,
+    onCreate: (String, String, String, String) -> Unit
+) {
+    var title by remember { mutableStateOf("") }
+    var place by remember { mutableStateOf("") }
+    var date by remember { mutableStateOf("") }
+    var customer by remember { mutableStateOf("") }
+    val dateValid = Regex("""\d{4}-\d{2}-\d{2}""").matches(date)
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Nuevo evento") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedTextField(value = title, onValueChange = { title = it }, label = { Text("Título") }, singleLine = true)
+                OutlinedTextField(value = customer, onValueChange = { customer = it }, label = { Text("Cliente / anfitrión") }, singleLine = true)
+                OutlinedTextField(value = place, onValueChange = { place = it }, label = { Text("Lugar") }, singleLine = true)
+                OutlinedTextField(value = date, onValueChange = { date = it }, label = { Text("Fecha (yyyy-MM-dd)") }, singleLine = true)
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = { onCreate(title, place, date, customer) },
+                enabled = title.isNotBlank() && place.isNotBlank() && customer.isNotBlank() && dateValid
+            ) { Text("Crear") }
+        },
+        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancelar") } }
+    )
 }
 
 @Composable
@@ -188,6 +246,7 @@ fun MyEventsScreenPreview() {
     EventifyfrontendkotlinTheme {
         MyEventsContent(
             onEventClick = {},
+            onCreateEvent = { _, _, _, _ -> },
             isLoading = false,
             events = emptyList()
         )

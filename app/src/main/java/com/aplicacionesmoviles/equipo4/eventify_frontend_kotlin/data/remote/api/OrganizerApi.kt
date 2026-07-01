@@ -81,6 +81,9 @@ interface OrganizerApi {
     ): Response<ImageUploadResponse>
 
     // Quotes
+    @POST("quotes")
+    suspend fun createQuote(@Body body: CreateQuoteRequest): Response<Quote>
+
     @GET("organizers/{organizerId}/quotes")
     suspend fun getOrganizerQuotes(@Path("organizerId") organizerId: Int): Response<List<Quote>>
 
@@ -97,6 +100,9 @@ interface OrganizerApi {
     suspend fun rejectQuote(@Path("quoteId") quoteId: String): Response<Unit>
 
     // Social Events
+    @POST("social-events")
+    suspend fun createSocialEvent(@Body body: CreateSocialEventRequest): Response<SocialEvent>
+
     @GET("social-events")
     suspend fun getSocialEvents(): Response<List<SocialEvent>>
 

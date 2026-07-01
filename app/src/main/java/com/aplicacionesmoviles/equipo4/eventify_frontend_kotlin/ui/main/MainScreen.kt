@@ -28,6 +28,7 @@ sealed class BottomNavItem(val route: String, val icon: ImageVector, val label: 
 fun MainScreen(
     onEventClick: (String) -> Unit,
     onQuoteClick: (String) -> Unit,
+    onCreateQuoteClick: () -> Unit,
     onCreateServiceClick: () -> Unit,
     onEditServiceClick: (Int) -> Unit,
     onEditProfileClick: () -> Unit,
@@ -89,6 +90,7 @@ fun MainScreen(
                 )
                 BottomNavItem.Cotizaciones -> QuoteListScreen(
                     onQuoteClick = onQuoteClick,
+                    onCreateQuoteClick = onCreateQuoteClick,
                     viewModel = organizerViewModel
                 )
                 BottomNavItem.Mensajes -> ChatListScreen(

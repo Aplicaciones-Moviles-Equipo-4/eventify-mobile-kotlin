@@ -274,6 +274,72 @@ class OrganizerViewModel(application: Application) : AndroidViewModel(applicatio
         }
     }
 
+    // Quote & Event creation (organizer prepares offers / registers events)
+    fun createQuote(
+        title: String,
+        eventType: String,
+        guestQuantity: Int,
+        location: String,
+        totalPrice: Double,
+        eventDate: String,
+        hostId: Int,
+        onSuccess: () -> Unit
+    ) {
+        val organizerId = sessionManager.profileId
+        if (organizerId == -1) { error = "Perfil no resuelto"; return }
+        viewModelScope.launch {
+            try {
+                val body = CreateQuoteRequest(
+                    title = title,
+                    eventType = eventType,
+                    guestQuantity = guestQuantity,
+                    location = location,
+                    totalPrice = totalPrice,
+                    state = "PENDING",
+                    eventDate = eventDate,
+                    organizerId = organizerId,
+                    hostId = hostId
+                )
+                val res = NetworkModule.organizerApi.createQuote(body)
+                if (res.isSuccessful) {
+                    LocalStore.pushNotification("Cotización creada", "\"$title\" fue registrada.", NotificationType.QUOTE)
+                    loadAllData()
+                    onSuccess()
+                } else {
+                    error = "Error al crear cotización: ${res.code()}"
+                }
+            } catch (e: Exception) { error = e.localizedMessage }
+        }
+    }
+
+    fun createEvent(
+        title: String,
+        place: String,
+        date: String,
+        customerName: String,
+        onSuccess: () -> Unit
+    ) {
+        viewModelScope.launch {
+            try {
+                val body = CreateSocialEventRequest(
+                    title = title,
+                    place = place,
+                    date = date,
+                    customerName = customerName,
+                    status = "Active"
+                )
+                val res = NetworkModule.organizerApi.createSocialEvent(body)
+                if (res.isSuccessful) {
+                    LocalStore.pushNotification("Evento creado", "\"$title\" fue registrado.", NotificationType.SYSTEM)
+                    loadAllData()
+                    onSuccess()
+                } else {
+                    error = "Error al crear evento: ${res.code()}"
+                }
+            } catch (e: Exception) { error = e.localizedMessage }
+        }
+    }
+
     // Quote & ServiceItem Management
     fun confirmQuote(quoteId: String) {
         viewModelScope.launch {

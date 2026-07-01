@@ -67,7 +67,14 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                         error = "Cuenta creada, pero no se pudo iniciar sesión. Intenta ingresar manualmente."
                     }
                 } else {
-                    error = "Error al registrar: ${response.code()} ${response.message()}"
+                    // Surface the backend message (e.g. "Username already exists") instead of a raw code.
+                    val serverMessage = extractServerMessage(response.errorBody()?.string())
+                    error = when {
+                        serverMessage?.contains("already exists", ignoreCase = true) == true ->
+                            "Ese nombre de usuario ya está registrado. Prueba con otro."
+                        serverMessage != null -> serverMessage
+                        else -> "No se pudo registrar (código ${response.code()}). Intenta con otro usuario."
+                    }
                 }
             } catch (e: Exception) {
                 error = "Error de red: ${e.localizedMessage}"
@@ -103,6 +110,21 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         } catch (e: Exception) {
             sessionManager.profileId = -1
         }
+    }
+
+    /** Extracts the "message" field from a backend JSON error body like {"message":"..."}. */
+    private fun extractServerMessage(body: String?): String? {
+        if (body.isNullOrBlank()) return null
+        val marker = "\"message\""
+        val idx = body.indexOf(marker)
+        if (idx == -1) return null
+        val colon = body.indexOf(':', idx + marker.length)
+        if (colon == -1) return null
+        val firstQuote = body.indexOf('"', colon + 1)
+        if (firstQuote == -1) return null
+        val secondQuote = body.indexOf('"', firstQuote + 1)
+        if (secondQuote == -1) return null
+        return body.substring(firstQuote + 1, secondQuote).ifBlank { null }
     }
 
     fun logout() {

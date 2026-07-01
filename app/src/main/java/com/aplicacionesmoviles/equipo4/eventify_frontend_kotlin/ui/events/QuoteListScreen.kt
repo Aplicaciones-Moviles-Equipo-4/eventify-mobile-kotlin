@@ -27,6 +27,7 @@ import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.viewmodel.Org
 @Composable
 fun QuoteListScreen(
     onQuoteClick: (String) -> Unit,
+    onCreateQuoteClick: () -> Unit,
     viewModel: OrganizerViewModel = viewModel()
 ) {
     LaunchedEffect(Unit) {
@@ -35,6 +36,7 @@ fun QuoteListScreen(
 
     QuoteListContent(
         onQuoteClick = onQuoteClick,
+        onCreateQuoteClick = onCreateQuoteClick,
         isLoading = viewModel.isLoading,
         quotes = viewModel.quotes
     )
@@ -43,6 +45,7 @@ fun QuoteListScreen(
 @Composable
 fun QuoteListContent(
     onQuoteClick: (String) -> Unit,
+    onCreateQuoteClick: () -> Unit,
     isLoading: Boolean,
     quotes: List<Quote>
 ) {
@@ -53,7 +56,18 @@ fun QuoteListContent(
         modifier = Modifier.fillMaxSize(),
         color = Color.White
     ) {
-        Scaffold { innerPadding ->
+        Scaffold(
+            floatingActionButton = {
+                FloatingActionButton(
+                    onClick = onCreateQuoteClick,
+                    containerColor = Color(0xFF2E2E8F),
+                    contentColor = Color.White,
+                    shape = CircleShape
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = "Nueva cotización")
+                }
+            }
+        ) { innerPadding ->
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -175,6 +189,7 @@ fun QuoteListScreenPreview() {
     EventifyfrontendkotlinTheme {
         QuoteListContent(
             onQuoteClick = {},
+            onCreateQuoteClick = {},
             isLoading = false,
             quotes = emptyList()
         )

@@ -104,6 +104,9 @@ fun NavGraph(
                 onQuoteClick = { quoteId ->
                     navController.navigate(Screen.QuoteDetail.createRoute(quoteId))
                 },
+                onCreateQuoteClick = {
+                    navController.navigate(Screen.CreateQuote.route)
+                },
                 onCreateServiceClick = {
                     navController.navigate(Screen.CreateService.createRoute())
                 },
@@ -177,7 +180,10 @@ fun NavGraph(
             )
         }
         composable(Screen.CreateQuote.route) {
-            CreateEditQuoteScreen(onBackClick = { navController.popBackStack() })
+            CreateEditQuoteScreen(
+                onBackClick = { navController.popBackStack() },
+                viewModel = organizerViewModel
+            )
         }
         composable(Screen.AlbumDetail.route) { backStackEntry ->
             val albumId = backStackEntry.arguments?.getString("albumId") ?: ""

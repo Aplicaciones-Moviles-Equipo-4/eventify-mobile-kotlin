@@ -82,3 +82,24 @@ data class ImageUploadResponse(
     val secureUrl: String,
     val publicId: String
 )
+
+// Request bodies for organizer-created resources (map to the backend Create*Resource records).
+data class CreateQuoteRequest(
+    val title: String,
+    val eventType: String,
+    val guestQuantity: Int,
+    val location: String,
+    val totalPrice: Double,
+    val state: String,
+    val eventDate: String,   // ISO-8601, e.g. "2026-12-24T18:00:00.000Z"
+    val organizerId: Int,
+    val hostId: Int
+)
+
+data class CreateSocialEventRequest(
+    val title: String,
+    val place: String,
+    val date: String,        // "yyyy-MM-dd"
+    val customerName: String,
+    val status: String
+)
