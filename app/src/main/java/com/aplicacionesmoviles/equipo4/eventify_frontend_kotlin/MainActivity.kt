@@ -7,6 +7,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.material3.Surface
 import androidx.compose.ui.graphics.Color
 import androidx.navigation.compose.rememberNavController
+import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.data.local.LocalStore
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.data.local.SessionManager
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.data.remote.NetworkModule
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.navigation.NavGraph
@@ -17,6 +18,9 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        // Initialize on-device store for local-first modules (tasks, budget, agenda, chat, notifications).
+        LocalStore.init(applicationContext)
 
         // Restore a previous session: if we already have a token and a resolved profile,
         // skip the login screen and prime the HTTP client with the saved token.

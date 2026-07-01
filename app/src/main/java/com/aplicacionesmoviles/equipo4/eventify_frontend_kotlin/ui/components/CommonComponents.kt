@@ -1,6 +1,7 @@
 package com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -17,11 +18,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.data.local.LocalStore
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.theme.BrandIndigo
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.theme.BrandIndigoContainer
 
 @Composable
-fun AppHeader() {
+fun AppHeader(onBellClick: () -> Unit = {}) {
+    val unread = LocalStore.notifications.count { !it.read }
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -47,11 +50,32 @@ fun AppHeader() {
                 color = BrandIndigo
             )
         }
-        Icon(
-            imageVector = Icons.Default.NotificationsNone,
-            contentDescription = "Notificaciones",
-            tint = BrandIndigo
-        )
+        Box(
+            modifier = Modifier.clip(CircleShape).clickable { onBellClick() }.padding(6.dp),
+            contentAlignment = Alignment.TopEnd
+        ) {
+            Icon(
+                imageVector = Icons.Default.NotificationsNone,
+                contentDescription = "Notificaciones",
+                tint = BrandIndigo
+            )
+            if (unread > 0) {
+                Box(
+                    modifier = Modifier
+                        .size(16.dp)
+                        .clip(CircleShape)
+                        .background(Color(0xFFE53935)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = if (unread > 9) "9+" else unread.toString(),
+                        color = Color.White,
+                        fontSize = 9.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+        }
     }
 }
 

@@ -1,6 +1,7 @@
 package com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.dashboard
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -35,6 +36,9 @@ import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.data.remote.mode
 @Composable
 fun DashboardScreen(
     onEventClick: (String) -> Unit,
+    onOpenNotifications: () -> Unit = {},
+    onOpenCalendar: () -> Unit = {},
+    onOpenChat: () -> Unit = {},
     viewModel: OrganizerViewModel = viewModel()
 ) {
     LaunchedEffect(Unit) {
@@ -49,6 +53,9 @@ fun DashboardScreen(
 
     DashboardContent(
         onEventClick = onEventClick,
+        onOpenNotifications = onOpenNotifications,
+        onOpenCalendar = onOpenCalendar,
+        onOpenChat = onOpenChat,
         isLoading = viewModel.isLoading,
         error = viewModel.error,
         userName = viewModel.profile?.firstName ?: "Organizador",
@@ -64,6 +71,9 @@ fun DashboardScreen(
 @Composable
 fun DashboardContent(
     onEventClick: (String) -> Unit,
+    onOpenNotifications: () -> Unit,
+    onOpenCalendar: () -> Unit,
+    onOpenChat: () -> Unit,
     isLoading: Boolean,
     error: String?,
     userName: String,
@@ -96,11 +106,17 @@ fun DashboardContent(
                         .padding(horizontal = 16.dp)
                 ) {
                     item {
-                        AppHeader()
+                        AppHeader(onBellClick = onOpenNotifications)
                         Spacer(modifier = Modifier.height(24.dp))
                         GreetingSection(userName = userName)
+                        Spacer(modifier = Modifier.height(20.dp))
+                        QuickActionsRow(
+                            onOpenCalendar = onOpenCalendar,
+                            onOpenChat = onOpenChat,
+                            onOpenNotifications = onOpenNotifications
+                        )
                         Spacer(modifier = Modifier.height(24.dp))
-                        
+
                         SummaryGrid(
                             rating = ratingAverage,
                             servicesCount = serviceCatalogsCount.toString(),
@@ -139,6 +155,62 @@ fun DashboardContent(
                         PendingQuotesSection(quotes = quotes.filter { it.state == "PENDING" })
                         Spacer(modifier = Modifier.height(80.dp))
                     }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun QuickActionsRow(
+    onOpenCalendar: () -> Unit,
+    onOpenChat: () -> Unit,
+    onOpenNotifications: () -> Unit
+) {
+    val unread = com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.data.local.LocalStore.unreadNotifications()
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        QuickAction("Calendario", Icons.Default.CalendarToday, modifier = Modifier.weight(1f), onClick = onOpenCalendar)
+        QuickAction("Mensajes", Icons.Outlined.ChatBubbleOutline, modifier = Modifier.weight(1f), onClick = onOpenChat)
+        QuickAction("Alertas", Icons.Default.NotificationsNone, modifier = Modifier.weight(1f), badge = unread, onClick = onOpenNotifications)
+    }
+}
+
+@Composable
+private fun QuickAction(
+    label: String,
+    icon: ImageVector,
+    modifier: Modifier = Modifier,
+    badge: Int = 0,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = modifier
+            .height(84.dp)
+            .clickable { onClick() },
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFF6F7FF)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Icon(icon, contentDescription = label, tint = Color(0xFF2E2E8F))
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(label, fontSize = 11.sp, color = Color(0xFF2E2E8F), fontWeight = FontWeight.Medium)
+            }
+            if (badge > 0) {
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(8.dp)
+                        .size(18.dp)
+                        .clip(CircleShape)
+                        .background(Color(0xFFE53935)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(if (badge > 9) "9+" else badge.toString(), color = Color.White, fontSize = 9.sp, fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -328,6 +400,9 @@ fun DashboardScreenPreview() {
     EventifyfrontendkotlinTheme {
         DashboardContent(
             onEventClick = {},
+            onOpenNotifications = {},
+            onOpenCalendar = {},
+            onOpenChat = {},
             isLoading = false,
             error = null,
             userName = "Marco",

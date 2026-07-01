@@ -46,6 +46,13 @@ interface OrganizerApi {
         @Path("catalogId") catalogId: Int
     ): Response<Unit>
 
+    @POST("{profileId}/service-catalogs/images")
+    @Multipart
+    suspend fun uploadServiceCatalogImage(
+        @Path("profileId") profileId: Int,
+        @Part file: MultipartBody.Part
+    ): Response<ImageUploadResponse>
+
     // Albums
     @GET("{profileId}/albums")
     suspend fun getAlbums(@Path("profileId") profileId: Int): Response<List<Album>>

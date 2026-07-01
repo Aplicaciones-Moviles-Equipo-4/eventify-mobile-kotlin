@@ -6,6 +6,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.data.local.LocalStore
+import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.data.local.NotificationType
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.data.local.SessionManager
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.data.remote.NetworkModule
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.data.remote.model.*
@@ -144,6 +146,22 @@ class OrganizerViewModel(application: Application) : AndroidViewModel(applicatio
         }
     }
 
+    // Service image upload (returns the Cloudinary secureUrl for use as ServiceCatalog.imageUrl)
+    fun uploadServiceImage(filePart: MultipartBody.Part, onSuccess: (String) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val res = NetworkModule.organizerApi.uploadServiceCatalogImage(sessionManager.profileId, filePart)
+                if (res.isSuccessful && res.body() != null) {
+                    onSuccess(res.body()!!.secureUrl)
+                } else {
+                    error = "Error al subir imagen del servicio: ${res.code()}"
+                }
+            } catch (e: Exception) {
+                error = e.localizedMessage
+            }
+        }
+    }
+
     // Service CRUD
     fun createService(catalog: ServiceCatalog, onSuccess: () -> Unit) {
         viewModelScope.launch {
@@ -261,8 +279,11 @@ class OrganizerViewModel(application: Application) : AndroidViewModel(applicatio
         viewModelScope.launch {
             try {
                 val res = NetworkModule.organizerApi.confirmQuote(quoteId)
-                if (res.isSuccessful) loadAllData()
-                else error = "Error al confirmar: ${res.code()}"
+                if (res.isSuccessful) {
+                    val title = quotes.firstOrNull { it.id == quoteId }?.title ?: "Cotización"
+                    LocalStore.pushNotification("Cotización aceptada", "\"$title\" fue marcada como aceptada.", NotificationType.QUOTE)
+                    loadAllData()
+                } else error = "Error al confirmar: ${res.code()}"
             } catch (e: Exception) { error = e.localizedMessage }
         }
     }
@@ -271,8 +292,11 @@ class OrganizerViewModel(application: Application) : AndroidViewModel(applicatio
         viewModelScope.launch {
             try {
                 val res = NetworkModule.organizerApi.rejectQuote(quoteId)
-                if (res.isSuccessful) loadAllData()
-                else error = "Error al rechazar: ${res.code()}"
+                if (res.isSuccessful) {
+                    val title = quotes.firstOrNull { it.id == quoteId }?.title ?: "Cotización"
+                    LocalStore.pushNotification("Cotización rechazada", "\"$title\" fue marcada como rechazada.", NotificationType.QUOTE)
+                    loadAllData()
+                } else error = "Error al rechazar: ${res.code()}"
             } catch (e: Exception) { error = e.localizedMessage }
         }
     }

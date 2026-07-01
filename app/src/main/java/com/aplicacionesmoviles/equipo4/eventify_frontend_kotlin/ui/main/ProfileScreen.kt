@@ -34,6 +34,9 @@ import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.viewmodel.Org
 fun ProfileScreen(
     onEditProfileClick: () -> Unit,
     onAlbumClick: (String) -> Unit,
+    onCreateServiceClick: () -> Unit,
+    onEditServiceClick: (Int) -> Unit,
+    onOpenSubscription: () -> Unit,
     onLogout: () -> Unit,
     viewModel: OrganizerViewModel = viewModel()
 ) {
@@ -44,6 +47,9 @@ fun ProfileScreen(
     ProfileScreenContent(
         onEditProfileClick = onEditProfileClick,
         onAlbumClick = onAlbumClick,
+        onCreateServiceClick = onCreateServiceClick,
+        onEditServiceClick = onEditServiceClick,
+        onOpenSubscription = onOpenSubscription,
         onCreateAlbum = { title, description ->
             viewModel.createAlbum(
                 Album(id = 0, profileId = 0, title = title, description = description, photos = emptyList())
@@ -63,6 +69,9 @@ fun ProfileScreen(
 fun ProfileScreenContent(
     onEditProfileClick: () -> Unit,
     onAlbumClick: (String) -> Unit,
+    onCreateServiceClick: () -> Unit,
+    onEditServiceClick: (Int) -> Unit,
+    onOpenSubscription: () -> Unit,
     onCreateAlbum: (String, String) -> Unit,
     onLogout: () -> Unit,
     isLoading: Boolean,
@@ -98,6 +107,9 @@ fun ProfileScreenContent(
                 TopAppBar(
                     title = { Text("Perfil Profesional", fontSize = 18.sp, fontWeight = FontWeight.Bold) },
                     actions = {
+                        IconButton(onClick = onOpenSubscription) {
+                            Icon(Icons.Default.WorkspacePremium, contentDescription = "Suscripción", tint = Color(0xFFFFB300))
+                        }
                         IconButton(onClick = onEditProfileClick) {
                             Icon(Icons.Default.Edit, contentDescription = "Edit Profile")
                         }
@@ -145,8 +157,32 @@ fun ProfileScreenContent(
                     // Tab Content based on selection
                     when (selectedTabIndex) {
                         0 -> { // Servicios
+                            item {
+                                OutlinedButton(
+                                    onClick = onCreateServiceClick,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 16.dp),
+                                    border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF2E2E8F)),
+                                    shape = RoundedCornerShape(12.dp)
+                                ) {
+                                    Icon(Icons.Default.Add, contentDescription = null, tint = Color(0xFF2E2E8F))
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text("Nuevo servicio", color = Color(0xFF2E2E8F))
+                                }
+                            }
+                            if (serviceCatalogs.isEmpty()) {
+                                item {
+                                    Text(
+                                        text = "Aún no publicas servicios. Crea el primero para tu catálogo.",
+                                        color = Color.Gray,
+                                        fontSize = 14.sp,
+                                        modifier = Modifier.padding(16.dp)
+                                    )
+                                }
+                            }
                             items(serviceCatalogs) { service ->
-                                ProfileServiceCard(service)
+                                ProfileServiceCard(service, onClick = { onEditServiceClick(service.id) })
                             }
                         }
                         1 -> { // Álbumes
@@ -197,20 +233,29 @@ fun ProfileScreenContent(
 }
 
 @Composable
-fun ProfileServiceCard(service: ServiceCatalog) {
+fun ProfileServiceCard(service: ServiceCatalog, onClick: () -> Unit = {}) {
     Card(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp).clickable { onClick() },
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFF5F5F5))
     ) {
         Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-            AsyncImage(
-                model = "https://images.unsplash.com/photo-1519741497674-611481863552?w=200&q=80",
-                contentDescription = null,
-                modifier = Modifier.size(60.dp).clip(RoundedCornerShape(8.dp)),
-                contentScale = ContentScale.Crop
-            )
+            if (!service.imageUrl.isNullOrBlank()) {
+                AsyncImage(
+                    model = service.imageUrl,
+                    contentDescription = service.title,
+                    modifier = Modifier.size(60.dp).clip(RoundedCornerShape(8.dp)),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                Box(
+                    modifier = Modifier.size(60.dp).clip(RoundedCornerShape(8.dp)).background(Color(0xFFE8EAF6)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(Icons.Default.Assignment, contentDescription = null, tint = Color(0xFF2E2E8F))
+                }
+            }
             Spacer(modifier = Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(text = service.title, fontWeight = FontWeight.Bold, fontSize = 16.sp)
@@ -434,6 +479,9 @@ fun ProfileScreenPreview() {
         ProfileScreenContent(
             onEditProfileClick = {},
             onAlbumClick = {},
+            onCreateServiceClick = {},
+            onEditServiceClick = {},
+            onOpenSubscription = {},
             onCreateAlbum = { _, _ -> },
             onLogout = {},
             isLoading = false,

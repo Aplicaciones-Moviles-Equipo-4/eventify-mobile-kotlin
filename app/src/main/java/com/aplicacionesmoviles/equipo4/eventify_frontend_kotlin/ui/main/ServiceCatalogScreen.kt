@@ -180,14 +180,16 @@ fun ServiceItemCard(service: ServiceCatalog, onEditClick: (Int) -> Unit) {
         border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE0E0E0))
     ) {
         Column {
-            AsyncImage(
-                model = "https://images.unsplash.com/photo-1519741497674-611481863552?w=800&q=80",
-                contentDescription = null,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(150.dp),
-                contentScale = ContentScale.Crop
-            )
+            if (!service.imageUrl.isNullOrBlank()) {
+                AsyncImage(
+                    model = service.imageUrl,
+                    contentDescription = service.title,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(150.dp),
+                    contentScale = ContentScale.Crop
+                )
+            }
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(text = service.category.uppercase(), color = Color.Gray, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(4.dp))

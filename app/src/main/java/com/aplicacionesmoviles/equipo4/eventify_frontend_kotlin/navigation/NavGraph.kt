@@ -35,6 +35,12 @@ sealed class Screen(val route: String) {
     object AlbumDetail : Screen("albumDetail/{albumId}") {
         fun createRoute(albumId: String) = "albumDetail/$albumId"
     }
+    object Notifications : Screen("notifications")
+    object Calendar : Screen("calendar")
+    object Subscription : Screen("subscription")
+    object ChatDetail : Screen("chatDetail/{contact}") {
+        fun createRoute(contact: String) = "chatDetail/$contact"
+    }
 }
 
 @Composable
@@ -110,6 +116,18 @@ fun NavGraph(
                 onAlbumClick = { albumId ->
                     navController.navigate(Screen.AlbumDetail.createRoute(albumId))
                 },
+                onOpenChat = { contact ->
+                    navController.navigate(Screen.ChatDetail.createRoute(android.net.Uri.encode(contact)))
+                },
+                onOpenNotifications = {
+                    navController.navigate(Screen.Notifications.route)
+                },
+                onOpenCalendar = {
+                    navController.navigate(Screen.Calendar.route)
+                },
+                onOpenSubscription = {
+                    navController.navigate(Screen.Subscription.route)
+                },
                 onLogout = {
                     navController.navigate(Screen.Login.route) {
                         popUpTo(0) { inclusive = true }
@@ -167,6 +185,29 @@ fun NavGraph(
                 albumId = albumId,
                 onBackClick = { navController.popBackStack() },
                 viewModel = organizerViewModel
+            )
+        }
+        composable(Screen.Notifications.route) {
+            com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.more.NotificationsScreen(
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+        composable(Screen.Calendar.route) {
+            com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.more.CalendarScreen(
+                onBackClick = { navController.popBackStack() },
+                viewModel = organizerViewModel
+            )
+        }
+        composable(Screen.Subscription.route) {
+            com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.more.SubscriptionScreen(
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+        composable(Screen.ChatDetail.route) { backStackEntry ->
+            val contact = backStackEntry.arguments?.getString("contact") ?: ""
+            com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.chat.ChatDetailScreen(
+                contactName = contact,
+                onBackClick = { navController.popBackStack() }
             )
         }
     }

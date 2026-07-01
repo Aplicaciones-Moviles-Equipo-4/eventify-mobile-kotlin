@@ -1,17 +1,24 @@
 package com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.events
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddAPhoto
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -21,6 +28,11 @@ import coil.compose.AsyncImage
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.data.remote.model.ServiceCatalog
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.theme.EventifyfrontendkotlinTheme
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.viewmodel.OrganizerViewModel
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import java.io.File
+import java.io.FileOutputStream
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -29,11 +41,14 @@ fun CreateEditServiceScreen(
     onBackClick: () -> Unit,
     viewModel: OrganizerViewModel = viewModel()
 ) {
+    val context = LocalContext.current
     var title by remember { mutableStateOf("") }
     var category by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var priceFrom by remember { mutableStateOf("") }
     var priceTo by remember { mutableStateOf("") }
+    var imageUrl by remember { mutableStateOf<String?>(null) }
+    var isUploading by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
 
     val existingService = remember(serviceId, viewModel.serviceCatalogs) {
@@ -49,6 +64,25 @@ fun CreateEditServiceScreen(
             description = it.description
             priceFrom = it.priceFrom.toInt().toString()
             priceTo = it.priceTo.toInt().toString()
+            imageUrl = it.imageUrl
+        }
+    }
+
+    val imagePicker = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri ->
+        uri?.let {
+            isUploading = true
+            val file = File(context.cacheDir, "service_image_${System.currentTimeMillis()}.jpg")
+            context.contentResolver.openInputStream(it)?.use { input ->
+                FileOutputStream(file).use { output -> input.copyTo(output) }
+            }
+            val requestFile = file.asRequestBody("image/jpeg".toMediaTypeOrNull())
+            val body = MultipartBody.Part.createFormData("file", file.name, requestFile)
+            viewModel.uploadServiceImage(body) { secureUrl ->
+                imageUrl = secureUrl
+                isUploading = false
+            }
         }
     }
 
@@ -100,7 +134,8 @@ fun CreateEditServiceScreen(
                                 description = description,
                                 category = category,
                                 priceFrom = priceFrom.toDoubleOrNull() ?: 0.0,
-                                priceTo = priceTo.toDoubleOrNull() ?: 0.0
+                                priceTo = priceTo.toDoubleOrNull() ?: 0.0,
+                                imageUrl = imageUrl
                             )
                             if (serviceId == null) {
                                 viewModel.createService(catalog) { onBackClick() }
@@ -126,16 +161,35 @@ fun CreateEditServiceScreen(
                 }
 
                 Card(
-                    modifier = Modifier.fillMaxWidth().height(200.dp),
-                    shape = RoundedCornerShape(12.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp)
+                        .clickable(enabled = !isUploading) { imagePicker.launch("image/*") },
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFF5F5F5))
                 ) {
-                    Box(modifier = Modifier.fillMaxSize()) {
-                        AsyncImage(
-                            model = "https://images.unsplash.com/photo-1519741497674-611481863552?w=800&q=80",
-                            contentDescription = null,
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Crop
-                        )
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        if (!imageUrl.isNullOrBlank()) {
+                            AsyncImage(
+                                model = imageUrl,
+                                contentDescription = "Imagen del servicio",
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Crop
+                            )
+                        }
+                        when {
+                            isUploading -> CircularProgressIndicator(color = Color(0xFF2E2E8F))
+                            imageUrl.isNullOrBlank() -> Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Icon(Icons.Default.AddAPhoto, contentDescription = null, tint = Color(0xFF2E2E8F), modifier = Modifier.size(32.dp))
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text("Agregar foto del servicio", color = Color(0xFF2E2E8F), fontSize = 13.sp)
+                            }
+                        }
+                    }
+                }
+                if (!imageUrl.isNullOrBlank() && !isUploading) {
+                    TextButton(onClick = { imagePicker.launch("image/*") }) {
+                        Text("Cambiar foto", color = Color(0xFF2E2E8F), fontSize = 12.sp)
                     }
                 }
 

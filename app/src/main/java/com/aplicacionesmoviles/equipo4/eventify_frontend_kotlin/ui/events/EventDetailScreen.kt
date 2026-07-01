@@ -98,118 +98,67 @@ fun EventDetailScreen(
 
             // Tab Content
             when (selectedTabIndex) {
-                0 -> ResumenTab()
-                1 -> TasksTab()
-                else -> Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(text = "${tabs[selectedTabIndex]} Content")
-                }
+                0 -> ResumenTab(eventId = eventId)
+                1 -> TasksKanbanTab(eventId = eventId)
+                2 -> CronogramaTab(eventId = eventId)
+                else -> BudgetTab(eventId = eventId)
             }
         }
     }
 }
 
 @Composable
-fun ResumenTab() {
+fun ResumenTab(eventId: String) {
+    val tasks = com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.data.local.LocalStore.tasksForEvent(eventId)
+    val done = tasks.count { it.status == com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.data.local.TaskStatus.COMPLETADA }
+    val progress = if (tasks.isEmpty()) 0f else done.toFloat() / tasks.size
+    val budget = com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.data.local.LocalStore.budgetForEvent(eventId)
+    val spent = com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.data.local.LocalStore.spentForEvent(eventId)
+    val upcoming = com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.data.local.LocalStore.agendaForEvent(eventId).filter { !it.done }
+
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         item {
-            // Payment Alert
-            Card(
-                colors = CardDefaults.cardColors(containerColor = Color(0xFFFFF9F9)),
-                border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFFEEEEE)),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.ErrorOutline, contentDescription = null, tint = Color.Red, modifier = Modifier.size(24.dp))
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(text = "1 pago pendiente para hoy", fontWeight = FontWeight.Bold, color = Color.Red)
-                        Text(text = "Adelanto para Catering \"Delicias Peruanas\" - S/ 5,000", fontSize = 12.sp, color = Color.Black)
-                    }
-                    Button(
-                        onClick = { /* Resolve */ },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color.White),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, Color.LightGray),
-                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Text(text = "Resolver", color = Color.Black, fontSize = 12.sp)
-                    }
-                }
-            }
-        }
-
-        item {
             InfoCard(
-                title = "Progreso",
-                value = "75%",
-                subtitle = "completado",
+                title = "Progreso de tareas",
+                value = "${(progress * 100).toInt()}%",
+                subtitle = "$done de ${tasks.size} completadas",
                 icon = Icons.Default.TrendingUp,
-                progress = 0.75f,
+                progress = progress,
                 modifier = Modifier.fillMaxWidth()
             )
         }
 
         item {
+            val ratio = if (budget > 0) (spent / budget).toFloat().coerceIn(0f, 1f) else 0f
             InfoCard(
                 title = "Presupuesto",
-                value = "S/ 18,500",
-                subtitle = "de S/ 25,000",
+                value = "S/ ${spent.toInt()}",
+                subtitle = if (budget > 0) "de S/ ${budget.toInt()}" else "sin presupuesto definido",
                 icon = Icons.Default.AccountBalanceWallet,
-                progress = 0.74f,
-                progressColor = Color.Red,
+                progress = ratio,
+                progressColor = if (ratio > 0.9f) Color.Red else Color(0xFF2E2E8F),
                 modifier = Modifier.fillMaxWidth()
             )
-        }
-
-        item {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF2E2E8F)),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.Timer, contentDescription = null, tint = Color.White, modifier = Modifier.size(32.dp))
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Column {
-                        Text(text = "Tiempo", color = Color.White, fontSize = 12.sp)
-                        Text(text = "12 días faltan", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 20.sp)
-                    }
-                }
-            }
-        }
-
-        item {
-            // Moodboard
-            Card(
-                modifier = Modifier.fillMaxWidth().height(150.dp),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Box {
-                    Box(modifier = Modifier.fillMaxSize().background(Color.LightGray)) // Placeholder for image
-                    Box(modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.3f)))
-                    Text(
-                        text = "Moodboard Aprobado",
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.align(Alignment.BottomStart).padding(16.dp)
-                    )
-                }
-            }
         }
 
         item {
             Text(text = "Próximas actividades", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = Color.Black)
         }
 
-        items(listOf(
-            ActivityItem("Visita a local \"Fundo Cieneguilla\"", "Mañana, 10:00 AM • Confirmado", Icons.Default.Store),
-            ActivityItem("Degustación de menú", "Vie, 14 jun • Catering Delicias ...", Icons.Default.Restaurant),
-            ActivityItem("Cierre de lista de invitados", "Lun, 17 jun • 150 confirmados ...", Icons.Default.CheckCircle)
-        )) { activity ->
+        if (upcoming.isEmpty()) {
+            item {
+                Text(
+                    text = "Aún no hay actividades en el cronograma. Agrégalas en la pestaña \"Cronograma\".",
+                    color = Color.Gray, fontSize = 13.sp
+                )
+            }
+        }
+
+        items(upcoming) { activity ->
             Row(
                 modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
@@ -219,27 +168,15 @@ fun ResumenTab() {
                     shape = RoundedCornerShape(8.dp),
                     modifier = Modifier.size(40.dp)
                 ) {
-                    Icon(activity.icon, contentDescription = null, modifier = Modifier.padding(8.dp), tint = Color(0xFF2E2E8F))
+                    Icon(Icons.Default.Schedule, contentDescription = null, modifier = Modifier.padding(8.dp), tint = Color(0xFF2E2E8F))
                 }
                 Spacer(modifier = Modifier.width(16.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(text = activity.title, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Color.Black)
-                    Text(text = activity.subtitle, fontSize = 12.sp, color = Color.Gray)
+                    Text(text = activity.time, fontSize = 12.sp, color = Color.Gray)
                 }
-                Icon(Icons.Default.ChevronRight, contentDescription = null, tint = Color.LightGray)
             }
             HorizontalDivider(color = Color(0xFFF5F5F5))
-        }
-
-        item {
-            TextButton(
-                onClick = { /* See all */ },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(text = "Ver todas las tareas", color = Color(0xFF2E2E8F))
-                Spacer(modifier = Modifier.width(4.dp))
-                Icon(Icons.Default.ArrowForward, contentDescription = null, modifier = Modifier.size(16.dp))
-            }
         }
     }
 }

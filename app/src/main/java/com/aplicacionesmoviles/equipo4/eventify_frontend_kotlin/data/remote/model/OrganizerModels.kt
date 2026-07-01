@@ -25,7 +25,8 @@ data class ServiceCatalog(
     val description: String,
     val category: String,
     val priceFrom: Double,
-    val priceTo: Double
+    val priceTo: Double,
+    val imageUrl: String? = null
 )
 
 data class Album(

@@ -9,6 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.chat.ChatListScreen
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.dashboard.DashboardScreen
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.events.MyEventsScreen
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.events.QuoteListScreen
@@ -19,7 +20,7 @@ sealed class BottomNavItem(val route: String, val icon: ImageVector, val label: 
     object Inicio : BottomNavItem("inicio", Icons.Outlined.Home, "Inicio")
     object Eventos : BottomNavItem("eventos", Icons.Outlined.CalendarToday, "Eventos")
     object Cotizaciones : BottomNavItem("cotizaciones", Icons.Outlined.Description, "Cotizaciones")
-    object Servicios : BottomNavItem("servicios", Icons.Outlined.Assignment, "Servicios")
+    object Mensajes : BottomNavItem("mensajes", Icons.Outlined.ChatBubbleOutline, "Mensajes")
     object Perfil : BottomNavItem("perfil", Icons.Outlined.Person, "Perfil")
 }
 
@@ -31,6 +32,10 @@ fun MainScreen(
     onEditServiceClick: (Int) -> Unit,
     onEditProfileClick: () -> Unit,
     onAlbumClick: (String) -> Unit,
+    onOpenChat: (String) -> Unit,
+    onOpenNotifications: () -> Unit,
+    onOpenCalendar: () -> Unit,
+    onOpenSubscription: () -> Unit,
     onLogout: () -> Unit,
     authViewModel: AuthViewModel = viewModel(),
     organizerViewModel: OrganizerViewModel = viewModel()
@@ -41,7 +46,7 @@ fun MainScreen(
         BottomNavItem.Inicio,
         BottomNavItem.Eventos,
         BottomNavItem.Cotizaciones,
-        BottomNavItem.Servicios,
+        BottomNavItem.Mensajes,
         BottomNavItem.Perfil
     )
 
@@ -73,6 +78,9 @@ fun MainScreen(
             when (selectedItem) {
                 BottomNavItem.Inicio -> DashboardScreen(
                     onEventClick = onEventClick,
+                    onOpenNotifications = onOpenNotifications,
+                    onOpenCalendar = onOpenCalendar,
+                    onOpenChat = { selectedItem = BottomNavItem.Mensajes },
                     viewModel = organizerViewModel
                 )
                 BottomNavItem.Eventos -> MyEventsScreen(
@@ -83,14 +91,15 @@ fun MainScreen(
                     onQuoteClick = onQuoteClick,
                     viewModel = organizerViewModel
                 )
-                BottomNavItem.Servicios -> ServiceCatalogScreen(
-                    onCreateServiceClick = onCreateServiceClick,
-                    onEditServiceClick = onEditServiceClick,
-                    viewModel = organizerViewModel
+                BottomNavItem.Mensajes -> ChatListScreen(
+                    onOpenChat = onOpenChat
                 )
                 BottomNavItem.Perfil -> ProfileScreen(
                     onEditProfileClick = onEditProfileClick,
                     onAlbumClick = onAlbumClick,
+                    onCreateServiceClick = onCreateServiceClick,
+                    onEditServiceClick = onEditServiceClick,
+                    onOpenSubscription = onOpenSubscription,
                     onLogout = {
                         authViewModel.logout()
                         onLogout()
