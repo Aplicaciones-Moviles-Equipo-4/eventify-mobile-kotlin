@@ -33,6 +33,22 @@ fun QuoteDetailScreen(
 ) {
     var showAddDialog by remember { mutableStateOf(false) }
     var editingItem by remember { mutableStateOf<ServiceItem?>(null) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
+
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text("Eliminar cotización") },
+            text = { Text("¿Seguro que deseas eliminar esta cotización? Esta acción no se puede deshacer.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    showDeleteDialog = false
+                    viewModel.deleteQuote(quoteId) { onBackClick() }
+                }) { Text("Eliminar", color = Color.Red) }
+            },
+            dismissButton = { TextButton(onClick = { showDeleteDialog = false }) { Text("Cancelar") } }
+        )
+    }
 
     val quote = remember(quoteId, viewModel.quotes) {
         viewModel.quotes.find { it.id == quoteId }
@@ -94,6 +110,9 @@ fun QuoteDetailScreen(
                         IconButton(onClick = { viewModel.rejectQuote(quoteId) }) {
                             Icon(Icons.Default.Close, contentDescription = "Reject", tint = Color.Red)
                         }
+                    }
+                    IconButton(onClick = { showDeleteDialog = true }) {
+                        Icon(Icons.Default.Delete, contentDescription = "Eliminar", tint = Color.Red)
                     }
                 }
             )

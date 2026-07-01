@@ -77,7 +77,7 @@ fun CalendarScreen(
                     Icon(Icons.Default.ChevronLeft, contentDescription = "Mes anterior", tint = Indigo)
                 }
                 Text(
-                    "${currentMonth.month.getDisplayName(TextStyle.FULL, Locale("es")).replaceFirstChar { it.uppercase() }} ${currentMonth.year}",
+                    "${currentMonth.month.getDisplayName(TextStyle.FULL, Locale.forLanguageTag("es")).replaceFirstChar { it.uppercase() }} ${currentMonth.year}",
                     fontWeight = FontWeight.Bold, fontSize = 16.sp
                 )
                 IconButton(onClick = { currentMonth = currentMonth.plusMonths(1) }) {

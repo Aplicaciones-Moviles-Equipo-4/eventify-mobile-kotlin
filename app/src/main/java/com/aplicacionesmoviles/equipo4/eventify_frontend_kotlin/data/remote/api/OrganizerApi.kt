@@ -93,6 +93,9 @@ interface OrganizerApi {
     @PUT("quotes/{quoteId}")
     suspend fun updateQuote(@Path("quoteId") quoteId: String, @Body quote: Quote): Response<Quote>
 
+    @DELETE("quotes/{quoteId}")
+    suspend fun deleteQuote(@Path("quoteId") quoteId: String): Response<Unit>
+
     @POST("quotes/{quoteId}/confirmations")
     suspend fun confirmQuote(@Path("quoteId") quoteId: String): Response<Unit>
 
@@ -105,6 +108,9 @@ interface OrganizerApi {
 
     @GET("social-events")
     suspend fun getSocialEvents(): Response<List<SocialEvent>>
+
+    @DELETE("social-events/{socialEventId}")
+    suspend fun deleteSocialEvent(@Path("socialEventId") socialEventId: Int): Response<Unit>
 
     @GET("customers/{customerName}/social-events")
     suspend fun getSocialEventsByCustomer(@Path("customerName") customerName: String): Response<List<SocialEvent>>

@@ -340,6 +340,30 @@ class OrganizerViewModel(application: Application) : AndroidViewModel(applicatio
         }
     }
 
+    fun deleteQuote(quoteId: String, onSuccess: () -> Unit) {
+        viewModelScope.launch {
+            try {
+                val res = NetworkModule.organizerApi.deleteQuote(quoteId)
+                if (res.isSuccessful) {
+                    loadAllData()
+                    onSuccess()
+                } else error = "Error al eliminar cotización: ${res.code()}"
+            } catch (e: Exception) { error = e.localizedMessage }
+        }
+    }
+
+    fun deleteEvent(eventId: Int, onSuccess: () -> Unit) {
+        viewModelScope.launch {
+            try {
+                val res = NetworkModule.organizerApi.deleteSocialEvent(eventId)
+                if (res.isSuccessful) {
+                    loadAllData()
+                    onSuccess()
+                } else error = "Error al eliminar evento: ${res.code()}"
+            } catch (e: Exception) { error = e.localizedMessage }
+        }
+    }
+
     // Quote & ServiceItem Management
     fun confirmQuote(quoteId: String) {
         viewModelScope.launch {

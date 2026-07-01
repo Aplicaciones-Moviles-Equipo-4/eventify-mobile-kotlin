@@ -38,6 +38,22 @@ fun EventDetailScreen(
         viewModel.socialEvents.find { it.id.toString() == eventId }
     }
 
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text("Eliminar evento") },
+            text = { Text("¿Seguro que deseas eliminar este evento? Esta acción no se puede deshacer.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    showDeleteDialog = false
+                    eventId.toIntOrNull()?.let { id -> viewModel.deleteEvent(id) { onBackClick() } }
+                }) { Text("Eliminar", color = Color.Red) }
+            },
+            dismissButton = { TextButton(onClick = { showDeleteDialog = false }) { Text("Cancelar") } }
+        )
+    }
+
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = Color.White
@@ -52,11 +68,8 @@ fun EventDetailScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { /* Edit */ }) {
-                        Icon(Icons.Default.Edit, contentDescription = "Edit")
-                    }
-                    IconButton(onClick = { /* More */ }) {
-                        Icon(Icons.Default.MoreVert, contentDescription = "More")
+                    IconButton(onClick = { showDeleteDialog = true }) {
+                        Icon(Icons.Default.Delete, contentDescription = "Eliminar", tint = Color.Red)
                     }
                 }
             )
