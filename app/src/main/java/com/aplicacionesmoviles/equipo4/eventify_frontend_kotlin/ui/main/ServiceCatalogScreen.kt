@@ -21,6 +21,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.data.remote.model.ServiceCatalog
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.components.AppHeader
+import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.components.EmptyState
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.theme.EventifyfrontendkotlinTheme
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.viewmodel.OrganizerViewModel
 
@@ -76,24 +77,48 @@ fun ServiceCatalogContent(
                         .padding(innerPadding)
                         .padding(horizontal = 16.dp)
                 ) {
+                    var searchQuery by remember { mutableStateOf("") }
+                    var selectedFilter by remember { mutableStateOf("Todos") }
+
                     AppHeader()
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(text = "Catálogo de servicios", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.Black)
                     Text(text = "Gestiona y actualiza los servicios que ofreces.", color = Color.Gray, fontSize = 14.sp)
-                    
+
                     Spacer(modifier = Modifier.height(16.dp))
-                    CatalogSearchBar()
-                    
+                    CatalogSearchBar(query = searchQuery, onQueryChange = { searchQuery = it })
+
                     Spacer(modifier = Modifier.height(16.dp))
-                    CatalogFilterChips()
-                    
+                    val categories = remember(serviceCatalogs) {
+                        listOf("Todos") + serviceCatalogs.map { it.category }.distinct()
+                    }
+                    CatalogFilterChips(
+                        filters = categories,
+                        selectedFilter = selectedFilter,
+                        onFilterSelected = { selectedFilter = it }
+                    )
+
                     Spacer(modifier = Modifier.height(16.dp))
-                    LazyColumn(
-                        verticalArrangement = Arrangement.spacedBy(16.dp),
-                        contentPadding = PaddingValues(bottom = 80.dp)
-                    ) {
-                        items(serviceCatalogs) { service ->
-                            ServiceItemCard(service, onEditServiceClick)
+                    val filtered = serviceCatalogs.filter { service ->
+                        (selectedFilter == "Todos" || service.category == selectedFilter) &&
+                            (searchQuery.isBlank() ||
+                                service.title.contains(searchQuery, ignoreCase = true) ||
+                                service.category.contains(searchQuery, ignoreCase = true))
+                    }
+                    if (filtered.isEmpty()) {
+                        EmptyState(
+                            icon = Icons.Default.Assignment,
+                            title = "Sin servicios",
+                            message = "Pulsa el botón + para publicar tu primer servicio en el catálogo."
+                        )
+                    } else {
+                        LazyColumn(
+                            verticalArrangement = Arrangement.spacedBy(16.dp),
+                            contentPadding = PaddingValues(bottom = 80.dp)
+                        ) {
+                            items(filtered) { service ->
+                                ServiceItemCard(service, onEditServiceClick)
+                            }
                         }
                     }
                 }
@@ -103,13 +128,14 @@ fun ServiceCatalogContent(
 }
 
 @Composable
-private fun CatalogSearchBar() {
+private fun CatalogSearchBar(query: String, onQueryChange: (String) -> Unit) {
     OutlinedTextField(
-        value = "",
-        onValueChange = {},
+        value = query,
+        onValueChange = onQueryChange,
         modifier = Modifier.fillMaxWidth(),
         placeholder = { Text("Buscar servicios...") },
         leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+        singleLine = true,
         shape = RoundedCornerShape(12.dp),
         colors = OutlinedTextFieldDefaults.colors(
             unfocusedContainerColor = Color(0xFFF5F5F5),
@@ -121,18 +147,19 @@ private fun CatalogSearchBar() {
 }
 
 @Composable
-private fun CatalogFilterChips() {
-    val filters = listOf("Todos", "Decoración", "Catering", "Música")
-    var selectedFilter by remember { mutableStateOf("Todos") }
-
-    Row(
+private fun CatalogFilterChips(
+    filters: List<String>,
+    selectedFilter: String,
+    onFilterSelected: (String) -> Unit
+) {
+    androidx.compose.foundation.lazy.LazyRow(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        filters.forEach { filter ->
+        items(filters) { filter ->
             FilterChip(
                 selected = selectedFilter == filter,
-                onClick = { selectedFilter = filter },
+                onClick = { onFilterSelected(filter) },
                 label = { Text(filter) },
                 colors = FilterChipDefaults.filterChipColors(
                     selectedContainerColor = Color(0xFF2E2E8F),

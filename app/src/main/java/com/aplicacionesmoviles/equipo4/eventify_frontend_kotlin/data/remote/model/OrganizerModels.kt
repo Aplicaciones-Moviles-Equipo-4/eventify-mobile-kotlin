@@ -12,7 +12,8 @@ data class Profile(
     val city: String?,
     val postalCode: String?,
     val country: String?,
-    val type: String
+    val type: String,
+    val profileImageUrl: String? = null
 ) {
     val fullName: String get() = "$firstName $lastName"
 }

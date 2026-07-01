@@ -118,14 +118,32 @@ fun EditProfileScreen(
                     .size(120.dp)
                     .clickable { launcher.launch("image/*") }
             ) {
-                AsyncImage(
-                    model = "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&q=80", // Fallback
-                    contentDescription = null,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .clip(CircleShape),
-                    contentScale = ContentScale.Crop
-                )
+                val imageUrl = profile?.profileImageUrl
+                if (!imageUrl.isNullOrBlank()) {
+                    AsyncImage(
+                        model = imageUrl,
+                        contentDescription = "Foto de perfil",
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clip(CircleShape),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clip(CircleShape)
+                            .background(Color(0xFFE8EAF6)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "${firstName.firstOrNull() ?: ""}${lastName.firstOrNull() ?: ""}".uppercase(),
+                            color = Color(0xFF2E2E8F),
+                            fontSize = 36.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
                 if (isUploading) {
                     CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = Color.White)
                 }

@@ -27,10 +27,10 @@ sealed class BottomNavItem(val route: String, val icon: ImageVector, val label: 
 fun MainScreen(
     onEventClick: (String) -> Unit,
     onQuoteClick: (String) -> Unit,
-    onCreateQuoteClick: () -> Unit,
     onCreateServiceClick: () -> Unit,
     onEditServiceClick: (Int) -> Unit,
     onEditProfileClick: () -> Unit,
+    onAlbumClick: (String) -> Unit,
     onLogout: () -> Unit,
     authViewModel: AuthViewModel = viewModel(),
     organizerViewModel: OrganizerViewModel = viewModel()
@@ -81,7 +81,6 @@ fun MainScreen(
                 )
                 BottomNavItem.Cotizaciones -> QuoteListScreen(
                     onQuoteClick = onQuoteClick,
-                    onCreateQuoteClick = onCreateQuoteClick,
                     viewModel = organizerViewModel
                 )
                 BottomNavItem.Servicios -> ServiceCatalogScreen(
@@ -91,6 +90,7 @@ fun MainScreen(
                 )
                 BottomNavItem.Perfil -> ProfileScreen(
                     onEditProfileClick = onEditProfileClick,
+                    onAlbumClick = onAlbumClick,
                     onLogout = {
                         authViewModel.logout()
                         onLogout()

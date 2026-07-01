@@ -41,11 +41,18 @@ fun DashboardScreen(
         viewModel.loadAllData()
     }
 
+    val ratingAverage = if (viewModel.reviews.isNotEmpty()) {
+        String.format(java.util.Locale.getDefault(), "%.1f", viewModel.reviews.map { it.rating }.average())
+    } else {
+        "—"
+    }
+
     DashboardContent(
         onEventClick = onEventClick,
         isLoading = viewModel.isLoading,
         error = viewModel.error,
         userName = viewModel.profile?.firstName ?: "Organizador",
+        ratingAverage = ratingAverage,
         serviceCatalogsCount = viewModel.serviceCatalogs.size,
         reviewsCount = viewModel.reviews.size,
         albumsCount = viewModel.albums.size,
@@ -60,6 +67,7 @@ fun DashboardContent(
     isLoading: Boolean,
     error: String?,
     userName: String,
+    ratingAverage: String,
     serviceCatalogsCount: Int,
     reviewsCount: Int,
     albumsCount: Int,
@@ -94,7 +102,7 @@ fun DashboardContent(
                         Spacer(modifier = Modifier.height(24.dp))
                         
                         SummaryGrid(
-                            rating = "4.8",
+                            rating = ratingAverage,
                             servicesCount = serviceCatalogsCount.toString(),
                             reviewsCount = reviewsCount.toString(),
                             albumsCount = albumsCount.toString()
@@ -118,10 +126,9 @@ fun DashboardContent(
                     items(socialEvents.filter { it.status == "Active" }) { event ->
                         FeaturedEventCard(
                             title = event.title,
-                            date = event.date,
+                            date = event.date.substringBefore("T"),
                             location = event.place,
-                            price = event.customerName, // Use customer name as subtitle
-                            guests = event.status,
+                            customerName = event.customerName,
                             onEventClick = { onEventClick(event.id.toString()) }
                         )
                         Spacer(modifier = Modifier.height(16.dp))
@@ -230,8 +237,7 @@ fun FeaturedEventCard(
     title: String,
     date: String,
     location: String,
-    price: String,
-    guests: String,
+    customerName: String,
     onEventClick: () -> Unit
 ) {
     Card(
@@ -250,21 +256,19 @@ fun FeaturedEventCard(
                 contentScale = ContentScale.Crop
             )
             Column(modifier = Modifier.padding(16.dp)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(text = title, fontSize = 18.sp, fontWeight = FontWeight.Bold)
-                    Text(text = price, color = Color(0xFF2E2E8F), fontWeight = FontWeight.Bold)
-                }
+                Text(text = title, fontSize = 18.sp, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Default.CalendarToday, contentDescription = null, modifier = Modifier.size(14.dp), tint = Color.Gray)
                     Text(text = " $date", color = Color.Gray, fontSize = 12.sp)
                     Text(text = "  •  ", color = Color.Gray)
-                    Icon(Icons.Default.People, contentDescription = null, modifier = Modifier.size(14.dp), tint = Color.Gray)
-                    Text(text = " $guests", color = Color.Gray, fontSize = 12.sp)
+                    Icon(Icons.Default.LocationOn, contentDescription = null, modifier = Modifier.size(14.dp), tint = Color.Gray)
+                    Text(text = " $location", color = Color.Gray, fontSize = 12.sp, maxLines = 1)
+                }
+                Spacer(modifier = Modifier.height(4.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.Person, contentDescription = null, modifier = Modifier.size(14.dp), tint = Color.Gray)
+                    Text(text = " $customerName", color = Color.Gray, fontSize = 12.sp)
                 }
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
@@ -299,7 +303,11 @@ fun PendingQuotesSection(quotes: List<Quote>) {
                         Spacer(modifier = Modifier.width(12.dp))
                         Column {
                             Text(text = quote.title, fontWeight = FontWeight.Bold)
-                            Text(text = "Hace 2 horas", fontSize = 12.sp, color = Color.Gray)
+                            Text(
+                                text = "${quote.guestQuantity} invitados • S/ ${quote.totalPrice}",
+                                fontSize = 12.sp,
+                                color = Color.Gray
+                            )
                         }
                         Spacer(modifier = Modifier.weight(1f))
                         Icon(Icons.Default.ChevronRight, contentDescription = null, tint = Color.LightGray)
@@ -323,6 +331,7 @@ fun DashboardScreenPreview() {
             isLoading = false,
             error = null,
             userName = "Marco",
+            ratingAverage = "4.8",
             serviceCatalogsCount = 5,
             reviewsCount = 10,
             albumsCount = 3,

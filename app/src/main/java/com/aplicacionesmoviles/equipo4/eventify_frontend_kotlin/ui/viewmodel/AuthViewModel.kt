@@ -31,26 +31,9 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
             isLoading = true
             error = null
             try {
-                val response = NetworkModule.authApi.signIn(SignInRequest(username, password))
-                if (response.isSuccessful && response.body() != null) {
-                    val body = response.body()!!
-                    val token = body.token
-                    sessionManager.token = token
-                    NetworkModule.setAuthToken(token)
-                    
-                    // Recommended flow in Backend Report (6. Flujo 1):
-                    // Resolve profile by email for demo or any other user.
-                    // For seed data, organizador_vip maps to contacto@eventoselegantes.com
-                    val emailToSearch = if (username == "organizador_vip") "contacto@eventoselegantes.com" else username // Try username as email for new users
-                    
-                    val profileRes = NetworkModule.organizerApi.getProfileByEmail(emailToSearch)
-                    if (profileRes.isSuccessful && profileRes.body() != null) {
-                        sessionManager.profileId = profileRes.body()!!.id
-                    } else {
-                        // Profile doesn't exist yet, we'll need to create it in CreateProfileScreen
-                        sessionManager.profileId = -1
-                    }
-                    
+                val authenticated = authenticate(username, password)
+                if (authenticated) {
+                    resolveProfileId(username)
                     loginSuccess = true
                 } else {
                     error = "Credenciales incorrectas"
@@ -71,11 +54,18 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                 // Backend expects a list of roles, defaulting to ROLE_USER as per report
                 val request = SignUpRequest(usernameRegister, passwordRegister, listOf("ROLE_USER"))
                 val response = NetworkModule.authApi.signUp(request)
-                
+
                 if (response.isSuccessful) {
-                    // After successful signup, we might want to auto-login or just set success
-                    // For now, let's just mark success to navigate to profile creation
-                    registerSuccess = true
+                    // Auto sign-in right after registering so the following profile-creation
+                    // call is authenticated (POST /profiles requires a valid JWT).
+                    val authenticated = authenticate(usernameRegister, passwordRegister)
+                    if (authenticated) {
+                        // Brand-new user has no profile yet -> CreateProfileScreen will create it.
+                        sessionManager.profileId = -1
+                        registerSuccess = true
+                    } else {
+                        error = "Cuenta creada, pero no se pudo iniciar sesión. Intenta ingresar manualmente."
+                    }
                 } else {
                     error = "Error al registrar: ${response.code()} ${response.message()}"
                 }
@@ -84,6 +74,34 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
             } finally {
                 isLoading = false
             }
+        }
+    }
+
+    /** Performs the sign-in call and persists the token. Returns true on success. */
+    private suspend fun authenticate(user: String, pass: String): Boolean {
+        val response = NetworkModule.authApi.signIn(SignInRequest(user, pass))
+        if (response.isSuccessful && response.body() != null) {
+            val token = response.body()!!.token
+            sessionManager.token = token
+            NetworkModule.setAuthToken(token)
+            return true
+        }
+        return false
+    }
+
+    /**
+     * Resolves the business profileId. There is no /me/profile endpoint, so we look it up by
+     * email (Backend Report, Flujo 1/2). The demo organizer maps to a known seed email.
+     */
+    private suspend fun resolveProfileId(user: String) {
+        val emailToSearch =
+            if (user == "organizador_vip") "contacto@eventoselegantes.com" else user
+        try {
+            val profileRes = NetworkModule.organizerApi.getProfileByEmail(emailToSearch)
+            sessionManager.profileId =
+                if (profileRes.isSuccessful && profileRes.body() != null) profileRes.body()!!.id else -1
+        } catch (e: Exception) {
+            sessionManager.profileId = -1
         }
     }
 

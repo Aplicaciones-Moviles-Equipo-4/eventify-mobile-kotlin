@@ -1,14 +1,18 @@
 package com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.auth.CreateProfileScreen
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.auth.LoginScreen
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.auth.RegisterScreen
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.events.*
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.main.MainScreen
+import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.viewmodel.OrganizerViewModel
 
 sealed class Screen(val route: String) {
     object Login : Screen("login")
@@ -24,8 +28,9 @@ sealed class Screen(val route: String) {
     object CreateQuote : Screen("createQuote")
     object CreateProfile : Screen("createProfile")
     object EditProfile : Screen("editProfile")
-    object CreateService : Screen("createService/{serviceId}?") {
-        fun createRoute(serviceId: Int? = null) = if (serviceId != null) "createService/$serviceId" else "createService"
+    object CreateService : Screen("createService?serviceId={serviceId}") {
+        fun createRoute(serviceId: Int? = null) =
+            if (serviceId != null) "createService?serviceId=$serviceId" else "createService"
     }
     object AlbumDetail : Screen("albumDetail/{albumId}") {
         fun createRoute(albumId: String) = "albumDetail/$albumId"
@@ -33,16 +38,24 @@ sealed class Screen(val route: String) {
 }
 
 @Composable
-fun NavGraph(navController: NavHostController) {
+fun NavGraph(
+    navController: NavHostController,
+    startDestination: String = Screen.Login.route
+) {
+    // Single OrganizerViewModel scoped to the Activity so every destination shares the same
+    // loaded state (profile, catalogs, albums, quotes, reviews). This is what keeps edit/detail
+    // screens populated instead of each creating an empty instance of its own.
+    val organizerViewModel: OrganizerViewModel = viewModel()
+
     NavHost(
         navController = navController,
-        startDestination = Screen.Login.route
+        startDestination = startDestination
     ) {
         composable(Screen.Login.route) {
             LoginScreen(
                 onLoginSuccess = {
                     navController.navigate(Screen.Main.route) {
-                        popUpTo(Screen.Login.route) { inclusive = true }
+                        popUpTo(0) { inclusive = true }
                     }
                 },
                 onCreateAccountClick = {
@@ -67,12 +80,14 @@ fun NavGraph(navController: NavHostController) {
                     navController.navigate(Screen.Main.route) {
                         popUpTo(0) { inclusive = true }
                     }
-                }
+                },
+                viewModel = organizerViewModel
             )
         }
         composable(Screen.EditProfile.route) {
             com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.main.EditProfileScreen(
-                onBackClick = { navController.popBackStack() }
+                onBackClick = { navController.popBackStack() },
+                viewModel = organizerViewModel
             )
         }
         composable(Screen.Main.route) {
@@ -83,9 +98,6 @@ fun NavGraph(navController: NavHostController) {
                 onQuoteClick = { quoteId ->
                     navController.navigate(Screen.QuoteDetail.createRoute(quoteId))
                 },
-                onCreateQuoteClick = {
-                    navController.navigate(Screen.CreateQuote.route)
-                },
                 onCreateServiceClick = {
                     navController.navigate(Screen.CreateService.createRoute())
                 },
@@ -95,18 +107,30 @@ fun NavGraph(navController: NavHostController) {
                 onEditProfileClick = {
                     navController.navigate(Screen.EditProfile.route)
                 },
+                onAlbumClick = { albumId ->
+                    navController.navigate(Screen.AlbumDetail.createRoute(albumId))
+                },
                 onLogout = {
                     navController.navigate(Screen.Login.route) {
                         popUpTo(0) { inclusive = true }
                     }
-                }
+                },
+                organizerViewModel = organizerViewModel
             )
         }
-        composable(Screen.CreateService.route) { backStackEntry ->
+        composable(
+            route = Screen.CreateService.route,
+            arguments = listOf(navArgument("serviceId") {
+                type = NavType.StringType
+                nullable = true
+                defaultValue = null
+            })
+        ) { backStackEntry ->
             val serviceId = backStackEntry.arguments?.getString("serviceId")
             CreateEditServiceScreen(
                 serviceId = serviceId,
-                onBackClick = { navController.popBackStack() }
+                onBackClick = { navController.popBackStack() },
+                viewModel = organizerViewModel
             )
         }
         composable(Screen.CreateEvent.route) {
@@ -122,14 +146,16 @@ fun NavGraph(navController: NavHostController) {
                 eventId = eventId,
                 onBackClick = {
                     navController.popBackStack()
-                }
+                },
+                viewModel = organizerViewModel
             )
         }
         composable(Screen.QuoteDetail.route) { backStackEntry ->
             val quoteId = backStackEntry.arguments?.getString("quoteId") ?: ""
             QuoteDetailScreen(
                 quoteId = quoteId,
-                onBackClick = { navController.popBackStack() }
+                onBackClick = { navController.popBackStack() },
+                viewModel = organizerViewModel
             )
         }
         composable(Screen.CreateQuote.route) {
@@ -139,7 +165,8 @@ fun NavGraph(navController: NavHostController) {
             val albumId = backStackEntry.arguments?.getString("albumId") ?: ""
             AlbumDetailScreen(
                 albumId = albumId,
-                onBackClick = { navController.popBackStack() }
+                onBackClick = { navController.popBackStack() },
+                viewModel = organizerViewModel
             )
         }
     }

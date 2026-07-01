@@ -23,6 +23,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.data.remote.model.SocialEvent
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.components.AppHeader
+import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.components.EmptyState
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.theme.EventifyfrontendkotlinTheme
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.viewmodel.OrganizerViewModel
 
@@ -69,7 +70,15 @@ fun MyEventsContent(
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(text = "Eventos", fontSize = 24.sp, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(16.dp))
-                    EventList(events = events, onEventClick = onEventClick)
+                    if (events.isEmpty()) {
+                        EmptyState(
+                            icon = Icons.Default.CalendarToday,
+                            title = "Aún no hay eventos",
+                            message = "Los eventos sociales asociados a tu cuenta aparecerán aquí."
+                        )
+                    } else {
+                        EventList(events = events, onEventClick = onEventClick)
+                    }
                 }
             }
         }
@@ -136,21 +145,26 @@ fun EventCard(event: SocialEvent, onEventClick: (String) -> Unit) {
 @Composable
 fun StatusTag(status: String) {
     val backgroundColor = when (status) {
-        "Active" -> Color(0xFFE8F5E9)
+        "Active", "ACCEPTED" -> Color(0xFFE8F5E9)
         "Completed" -> Color(0xFFE3F2FD)
-        "Cancelled" -> Color(0xFFFBE9E7)
+        "PENDING" -> Color(0xFFFFF8E1)
+        "Cancelled", "REJECTED" -> Color(0xFFFBE9E7)
         else -> Color(0xFFF5F5F5)
     }
     val textColor = when (status) {
-        "Active" -> Color(0xFF2E7D32)
+        "Active", "ACCEPTED" -> Color(0xFF2E7D32)
         "Completed" -> Color(0xFF0277BD)
-        "Cancelled" -> Color(0xFFD84315)
+        "PENDING" -> Color(0xFFF57F17)
+        "Cancelled", "REJECTED" -> Color(0xFFD84315)
         else -> Color.Black
     }
     val label = when (status) {
         "Active" -> "Activo"
         "Completed" -> "Completado"
         "Cancelled" -> "Cancelado"
+        "PENDING" -> "Pendiente"
+        "ACCEPTED" -> "Aceptada"
+        "REJECTED" -> "Rechazada"
         else -> status
     }
     

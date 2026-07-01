@@ -1,6 +1,9 @@
 package com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.main
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -15,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -29,6 +33,7 @@ import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.viewmodel.Org
 @Composable
 fun ProfileScreen(
     onEditProfileClick: () -> Unit,
+    onAlbumClick: (String) -> Unit,
     onLogout: () -> Unit,
     viewModel: OrganizerViewModel = viewModel()
 ) {
@@ -38,6 +43,12 @@ fun ProfileScreen(
 
     ProfileScreenContent(
         onEditProfileClick = onEditProfileClick,
+        onAlbumClick = onAlbumClick,
+        onCreateAlbum = { title, description ->
+            viewModel.createAlbum(
+                Album(id = 0, profileId = 0, title = title, description = description, photos = emptyList())
+            ) {}
+        },
         onLogout = onLogout,
         isLoading = viewModel.isLoading,
         profile = viewModel.profile,
@@ -51,6 +62,8 @@ fun ProfileScreen(
 @Composable
 fun ProfileScreenContent(
     onEditProfileClick: () -> Unit,
+    onAlbumClick: (String) -> Unit,
+    onCreateAlbum: (String, String) -> Unit,
     onLogout: () -> Unit,
     isLoading: Boolean,
     profile: Profile?,
@@ -60,6 +73,17 @@ fun ProfileScreenContent(
 ) {
     var selectedTabIndex by remember { mutableStateOf(2) } // Reviews selected in Figma
     val tabs = listOf("Servicios", "Álbumes", "Reseñas")
+    var showCreateAlbumDialog by remember { mutableStateOf(false) }
+
+    if (showCreateAlbumDialog) {
+        CreateAlbumDialog(
+            onDismiss = { showCreateAlbumDialog = false },
+            onCreate = { title, description ->
+                onCreateAlbum(title, description)
+                showCreateAlbumDialog = false
+            }
+        )
+    }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -73,11 +97,6 @@ fun ProfileScreenContent(
             Column(modifier = Modifier.fillMaxSize()) {
                 TopAppBar(
                     title = { Text("Perfil Profesional", fontSize = 18.sp, fontWeight = FontWeight.Bold) },
-                    navigationIcon = {
-                        IconButton(onClick = { /* Back */ }) {
-                            Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                        }
-                    },
                     actions = {
                         IconButton(onClick = onEditProfileClick) {
                             Icon(Icons.Default.Edit, contentDescription = "Edit Profile")
@@ -101,7 +120,8 @@ fun ProfileScreenContent(
                             email = profile?.email ?: "",
                             rating = String.format(Locale.getDefault(), "%.1f", ratingAverage),
                             reviewsCount = reviews.size.toString(),
-                            profileType = if (profile?.type == "ORGANIZER") "Organizador Profesional" else "Anfitrión"
+                            profileType = if (profile?.type == "ORGANIZER") "Organizador Profesional" else "Anfitrión",
+                            imageUrl = profile?.profileImageUrl
                         )
                     }
 
@@ -130,8 +150,32 @@ fun ProfileScreenContent(
                             }
                         }
                         1 -> { // Álbumes
+                            item {
+                                OutlinedButton(
+                                    onClick = { showCreateAlbumDialog = true },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 16.dp),
+                                    border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF2E2E8F)),
+                                    shape = RoundedCornerShape(12.dp)
+                                ) {
+                                    Icon(Icons.Default.Add, contentDescription = null, tint = Color(0xFF2E2E8F))
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text("Nuevo álbum", color = Color(0xFF2E2E8F))
+                                }
+                            }
+                            if (albums.isEmpty()) {
+                                item {
+                                    Text(
+                                        text = "Aún no tienes álbumes. Crea uno para mostrar tu portafolio.",
+                                        color = Color.Gray,
+                                        fontSize = 14.sp,
+                                        modifier = Modifier.padding(16.dp)
+                                    )
+                                }
+                            }
                             items(albums) { album ->
-                                AlbumItemCard(album)
+                                AlbumItemCard(album, onClick = { onAlbumClick(album.id.toString()) })
                             }
                         }
                         2 -> { // Reseñas
@@ -179,9 +223,12 @@ fun ProfileServiceCard(service: ServiceCatalog) {
 }
 
 @Composable
-fun AlbumItemCard(album: Album) {
+fun AlbumItemCard(album: Album, onClick: () -> Unit = {}) {
     Card(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .clickable { onClick() },
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFF5F5F5))
@@ -208,17 +255,35 @@ fun ProfileHeader(
     email: String,
     rating: String,
     reviewsCount: String,
-    profileType: String
+    profileType: String,
+    imageUrl: String? = null
 ) {
+    val context = LocalContext.current
     Column(
         modifier = Modifier.fillMaxWidth().padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        AsyncImage(
-            model = "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&q=80",
-            contentDescription = "Profile Picture",
-            modifier = Modifier.size(100.dp).clip(CircleShape)
-        )
+        if (!imageUrl.isNullOrBlank()) {
+            AsyncImage(
+                model = imageUrl,
+                contentDescription = "Foto de perfil",
+                modifier = Modifier.size(100.dp).clip(CircleShape),
+                contentScale = ContentScale.Crop
+            )
+        } else {
+            // Initials avatar when no photo has been uploaded yet.
+            Box(
+                modifier = Modifier.size(100.dp).clip(CircleShape).background(Color(0xFFE8EAF6)),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = name.split(" ").mapNotNull { it.firstOrNull()?.toString() }.take(2).joinToString(""),
+                    color = Color(0xFF2E2E8F),
+                    fontSize = 32.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
         Spacer(modifier = Modifier.height(16.dp))
         Text(text = name, fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Color.Black)
         Text(text = profileType, color = Color(0xFF2E2E8F), fontWeight = FontWeight.Medium)
@@ -240,8 +305,62 @@ fun ProfileHeader(
                 Text(text = "  |  $reviewsCount reseñas", color = Color.Gray, fontSize = 12.sp)
             }
         }
+        Spacer(modifier = Modifier.height(16.dp))
+        // Direct-contact shortcut (UX recommendation): open a WhatsApp chat, falling back to email.
+        Button(
+            onClick = {
+                if (email.isNotBlank()) {
+                    val intent = Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:$email"))
+                    runCatching { context.startActivity(intent) }
+                }
+            },
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E2E8F)),
+            shape = RoundedCornerShape(20.dp),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Icon(Icons.Default.Chat, contentDescription = null, modifier = Modifier.size(18.dp))
+            Spacer(modifier = Modifier.width(8.dp))
+            Text("Contactar")
+        }
         Spacer(modifier = Modifier.height(24.dp))
     }
+}
+
+@Composable
+fun CreateAlbumDialog(
+    onDismiss: () -> Unit,
+    onCreate: (String, String) -> Unit
+) {
+    var title by remember { mutableStateOf("") }
+    var description by remember { mutableStateOf("") }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Nuevo álbum") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedTextField(
+                    value = title,
+                    onValueChange = { title = it },
+                    label = { Text("Título") },
+                    singleLine = true
+                )
+                OutlinedTextField(
+                    value = description,
+                    onValueChange = { description = it },
+                    label = { Text("Descripción") }
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = { onCreate(title, description) },
+                enabled = title.isNotBlank()
+            ) { Text("Crear") }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("Cancelar") }
+        }
+    )
 }
 
 @Composable
@@ -314,6 +433,8 @@ fun ProfileScreenPreview() {
     EventifyfrontendkotlinTheme {
         ProfileScreenContent(
             onEditProfileClick = {},
+            onAlbumClick = {},
+            onCreateAlbum = { _, _ -> },
             onLogout = {},
             isLoading = false,
             profile = Profile(

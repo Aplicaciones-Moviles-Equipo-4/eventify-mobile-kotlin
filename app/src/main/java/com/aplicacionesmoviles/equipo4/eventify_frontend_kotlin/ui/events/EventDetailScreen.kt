@@ -19,16 +19,24 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.theme.EventifyfrontendkotlinTheme
+import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.viewmodel.OrganizerViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EventDetailScreen(
     eventId: String,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    viewModel: OrganizerViewModel = viewModel()
 ) {
     var selectedTabIndex by remember { mutableStateOf(0) }
     val tabs = listOf("Resumen", "Tareas", "Cronograma", "Presupuesto")
+
+    // Real event header pulled from the shared state loaded on the dashboard/events list.
+    val event = remember(eventId, viewModel.socialEvents) {
+        viewModel.socialEvents.find { it.id.toString() == eventId }
+    }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -56,27 +64,16 @@ fun EventDetailScreen(
             // Header Info
             Column(modifier = Modifier.padding(horizontal = 16.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Surface(
-                        color = Color(0xFFE3F2FD),
-                        shape = RoundedCornerShape(4.dp)
-                    ) {
-                        Text(
-                            text = "En planificación",
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
-                            fontSize = 12.sp,
-                            color = Color(0xFF0277BD),
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
+                    StatusTag(event?.status ?: "Active")
                     Spacer(modifier = Modifier.weight(1f))
                     Icon(Icons.Default.CalendarToday, contentDescription = null, modifier = Modifier.size(16.dp), tint = Color.Gray)
-                    Text(text = " 25 jun. 2026", color = Color.Gray, fontSize = 12.sp)
+                    Text(text = " ${event?.date?.substringBefore("T") ?: ""}", color = Color.Gray, fontSize = 12.sp)
                 }
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(text = "Boda de Camila y Diego", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.Black)
+                Text(text = event?.title ?: "Evento", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.Black)
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Default.LocationOn, contentDescription = null, modifier = Modifier.size(16.dp), tint = Color.Gray)
-                    Text(text = " Fundo Cieneguilla, Lima, Perú", color = Color.Gray, fontSize = 12.sp)
+                    Text(text = " ${event?.place ?: ""}", color = Color.Gray, fontSize = 12.sp)
                 }
             }
 

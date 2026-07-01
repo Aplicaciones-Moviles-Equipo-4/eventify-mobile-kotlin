@@ -39,7 +39,9 @@ class OrganizerViewModel(application: Application) : AndroidViewModel(applicatio
         }
         
         viewModelScope.launch {
-            isLoading = true
+            // Only block the UI with a spinner on the first load. Later refreshes (tab switches,
+            // post-mutation reloads) happen silently so the screen doesn't flash.
+            isLoading = profile == null
             error = null
             try {
                 // Fetch basic token from session if not set in NetworkModule

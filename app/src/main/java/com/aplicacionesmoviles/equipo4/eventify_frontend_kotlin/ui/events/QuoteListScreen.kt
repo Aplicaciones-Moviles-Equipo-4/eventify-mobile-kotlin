@@ -20,13 +20,13 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.data.remote.model.Quote
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.components.AppHeader
+import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.components.EmptyState
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.theme.EventifyfrontendkotlinTheme
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.viewmodel.OrganizerViewModel
 
 @Composable
 fun QuoteListScreen(
     onQuoteClick: (String) -> Unit,
-    onCreateQuoteClick: () -> Unit,
     viewModel: OrganizerViewModel = viewModel()
 ) {
     LaunchedEffect(Unit) {
@@ -35,7 +35,6 @@ fun QuoteListScreen(
 
     QuoteListContent(
         onQuoteClick = onQuoteClick,
-        onCreateQuoteClick = onCreateQuoteClick,
         isLoading = viewModel.isLoading,
         quotes = viewModel.quotes
     )
@@ -44,7 +43,6 @@ fun QuoteListScreen(
 @Composable
 fun QuoteListContent(
     onQuoteClick: (String) -> Unit,
-    onCreateQuoteClick: () -> Unit,
     isLoading: Boolean,
     quotes: List<Quote>
 ) {
@@ -55,18 +53,7 @@ fun QuoteListContent(
         modifier = Modifier.fillMaxSize(),
         color = Color.White
     ) {
-        Scaffold(
-            floatingActionButton = {
-                FloatingActionButton(
-                    onClick = onCreateQuoteClick,
-                    containerColor = Color(0xFF2E2E8F),
-                    contentColor = Color.White,
-                    shape = CircleShape
-                ) {
-                    Icon(Icons.Default.Add, contentDescription = "Add")
-                }
-            }
-        ) { innerPadding ->
+        Scaffold { innerPadding ->
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -111,12 +98,20 @@ fun QuoteListContent(
                         else -> quotes
                     }
 
-                    LazyColumn(
-                        verticalArrangement = Arrangement.spacedBy(16.dp),
-                        contentPadding = PaddingValues(bottom = 80.dp)
-                    ) {
-                        items(filteredQuotes) { quote ->
-                            QuoteCard(quote, onQuoteClick)
+                    if (filteredQuotes.isEmpty()) {
+                        EmptyState(
+                            icon = Icons.Default.Description,
+                            title = "Sin cotizaciones",
+                            message = "Aquí verás las solicitudes de cotización que te envíen los anfitriones."
+                        )
+                    } else {
+                        LazyColumn(
+                            verticalArrangement = Arrangement.spacedBy(16.dp),
+                            contentPadding = PaddingValues(bottom = 80.dp)
+                        ) {
+                            items(filteredQuotes) { quote ->
+                                QuoteCard(quote, onQuoteClick)
+                            }
                         }
                     }
                 }
@@ -180,7 +175,6 @@ fun QuoteListScreenPreview() {
     EventifyfrontendkotlinTheme {
         QuoteListContent(
             onQuoteClick = {},
-            onCreateQuoteClick = {},
             isLoading = false,
             quotes = emptyList()
         )
