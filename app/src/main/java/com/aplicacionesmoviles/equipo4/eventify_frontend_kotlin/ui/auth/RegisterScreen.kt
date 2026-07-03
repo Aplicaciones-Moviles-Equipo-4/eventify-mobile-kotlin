@@ -15,9 +15,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.foundation.clickable
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.theme.EventifyfrontendkotlinTheme
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.viewmodel.AuthViewModel
@@ -32,6 +35,8 @@ fun RegisterScreen(
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
+    var termsAccepted by remember { mutableStateOf(false) }
+    val uriHandler = LocalUriHandler.current
 
     LaunchedEffect(viewModel.registerSuccess) {
         if (viewModel.registerSuccess) {
@@ -135,7 +140,42 @@ fun RegisterScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Terms and conditions checkbox
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Checkbox(
+                    checked = termsAccepted,
+                    onCheckedChange = { termsAccepted = it },
+                    enabled = !viewModel.isLoading
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = "Acepto los ",
+                    fontSize = 14.sp,
+                    color = Color.Gray,
+                    modifier = Modifier.clickable { termsAccepted = !termsAccepted }
+                )
+                Text(
+                    text = "Términos y Condiciones",
+                    fontSize = 14.sp,
+                    color = Color(0xFF2E2E8F),
+                    fontWeight = FontWeight.Bold,
+                    textDecoration = TextDecoration.Underline,
+                    modifier = Modifier.clickable {
+                        try {
+                            uriHandler.openUri("https://eventify.com/terms") // Cambiar por tu URL de Termly
+                        } catch (e: Exception) {
+                            // Safe catch
+                        }
+                    }
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
 
             // Register Button
             Button(
@@ -150,7 +190,7 @@ fun RegisterScreen(
                     .fillMaxWidth()
                     .height(56.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E2E8F)),
-                enabled = !viewModel.isLoading && username.isNotBlank() && password.isNotBlank()
+                enabled = !viewModel.isLoading && username.isNotBlank() && password.isNotBlank() && termsAccepted
             ) {
                 if (viewModel.isLoading) {
                     CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
