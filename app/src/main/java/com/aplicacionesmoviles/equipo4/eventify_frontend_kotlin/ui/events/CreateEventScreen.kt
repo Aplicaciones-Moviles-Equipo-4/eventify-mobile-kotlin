@@ -161,14 +161,32 @@ fun CreateEventScreen(
             Spacer(modifier = Modifier.weight(1f))
 
             Button(
-                onClick = { if (currentStep < 5) currentStep++ },
+                onClick = {
+                    if (currentStep < 2) { // Changed from 5 for now since only 2 steps are implemented
+                        currentStep++
+                    } else {
+                        // Implement the final step save action
+                        viewModel.createEvent(
+                            title = eventName,
+                            place = location,
+                            date = date,
+                            customerName = "Cliente por confirmar", // Placeholder until field is added
+                            onSuccess = onBackClick
+                        )
+                    }
+                },
                 modifier = Modifier.fillMaxWidth().height(56.dp),
+                enabled = when(currentStep) {
+                    1 -> eventName.length >= 10 && eventType.isNotBlank()
+                    2 -> date.isNotBlank() && location.isNotBlank()
+                    else -> true
+                },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E2E8F)),
                 shape = RoundedCornerShape(12.dp)
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(text = if (currentStep < 5) "Siguiente" else "Finalizar", fontSize = 16.sp)
-                    if (currentStep < 5) {
+                    Text(text = if (currentStep < 2) "Siguiente" else "Finalizar", fontSize = 16.sp)
+                    if (currentStep < 2) {
                         Spacer(modifier = Modifier.width(8.dp))
                         Icon(Icons.Default.ArrowForward, contentDescription = null)
                     }

@@ -55,7 +55,7 @@ fun QuoteListContent(
     profileImageUrl: String? = null,
     initials: String = "E"
 ) {
-    var selectedFilter by remember { mutableStateOf("Pendientes") }
+    var selectedFilter by remember { mutableStateOf("Todas") }
     val filters = listOf("Todas", "Pendientes", "Aceptadas", "Rechazadas")
 
     Surface(

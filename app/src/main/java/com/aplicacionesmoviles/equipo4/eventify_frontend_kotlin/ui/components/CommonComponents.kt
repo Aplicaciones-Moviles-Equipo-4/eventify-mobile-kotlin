@@ -1,5 +1,6 @@
 package com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.components
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -16,11 +17,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.R
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.data.local.LocalStore
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.theme.BrandIndigo
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.theme.BrandIndigoContainer
@@ -64,11 +67,11 @@ fun AppHeader(
                 }
             }
             Spacer(modifier = Modifier.width(12.dp))
-            Text(
-                text = "Eventify",
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                color = BrandIndigo
+            Image(
+                painter = painterResource(id = R.drawable.fullbrand),
+                contentDescription = "Eventify",
+                modifier = Modifier.height(32.dp),
+                contentScale = ContentScale.Fit
             )
         }
         Box(
