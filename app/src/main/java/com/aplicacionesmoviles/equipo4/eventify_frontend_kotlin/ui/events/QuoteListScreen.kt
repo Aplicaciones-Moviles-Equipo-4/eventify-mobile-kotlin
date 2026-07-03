@@ -28,6 +28,7 @@ import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.viewmodel.Org
 fun QuoteListScreen(
     onQuoteClick: (String) -> Unit,
     onCreateQuoteClick: () -> Unit,
+    onOpenNotifications: () -> Unit = {},
     viewModel: OrganizerViewModel = viewModel()
 ) {
     LaunchedEffect(Unit) {
@@ -37,6 +38,7 @@ fun QuoteListScreen(
     QuoteListContent(
         onQuoteClick = onQuoteClick,
         onCreateQuoteClick = onCreateQuoteClick,
+        onOpenNotifications = onOpenNotifications,
         isLoading = viewModel.isLoading,
         quotes = viewModel.quotes,
         profileImageUrl = viewModel.profile?.profileImageUrl,
@@ -50,6 +52,7 @@ fun QuoteListScreen(
 fun QuoteListContent(
     onQuoteClick: (String) -> Unit,
     onCreateQuoteClick: () -> Unit,
+    onOpenNotifications: () -> Unit = {},
     isLoading: Boolean,
     quotes: List<Quote>,
     profileImageUrl: String? = null,
@@ -81,6 +84,7 @@ fun QuoteListContent(
                     .padding(horizontal = 16.dp)
             ) {
                 AppHeader(
+                    onBellClick = onOpenNotifications,
                     profileImageUrl = profileImageUrl,
                     initials = initials
                 )
@@ -199,6 +203,7 @@ fun QuoteListScreenPreview() {
         QuoteListContent(
             onQuoteClick = {},
             onCreateQuoteClick = {},
+            onOpenNotifications = {},
             isLoading = false,
             quotes = emptyList()
         )

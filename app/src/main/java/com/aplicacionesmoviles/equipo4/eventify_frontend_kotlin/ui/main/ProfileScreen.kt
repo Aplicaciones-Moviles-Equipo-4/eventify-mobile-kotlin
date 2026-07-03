@@ -37,6 +37,7 @@ fun ProfileScreen(
     onCreateServiceClick: () -> Unit,
     onEditServiceClick: (Int) -> Unit,
     onOpenSubscription: () -> Unit,
+    onOpenNotifications: () -> Unit = {},
     onLogout: () -> Unit,
     viewModel: OrganizerViewModel = viewModel()
 ) {
@@ -50,6 +51,7 @@ fun ProfileScreen(
         onCreateServiceClick = onCreateServiceClick,
         onEditServiceClick = onEditServiceClick,
         onOpenSubscription = onOpenSubscription,
+        onOpenNotifications = onOpenNotifications,
         onCreateAlbum = { title, description ->
             viewModel.createAlbum(
                 Album(id = 0, profileId = 0, title = title, description = description, photos = emptyList())
@@ -72,6 +74,7 @@ fun ProfileScreenContent(
     onCreateServiceClick: () -> Unit,
     onEditServiceClick: (Int) -> Unit,
     onOpenSubscription: () -> Unit,
+    onOpenNotifications: () -> Unit = {},
     onCreateAlbum: (String, String) -> Unit,
     onLogout: () -> Unit,
     isLoading: Boolean,
@@ -107,6 +110,20 @@ fun ProfileScreenContent(
                 TopAppBar(
                     title = { Text("Perfil Profesional", fontSize = 18.sp, fontWeight = FontWeight.Bold) },
                     actions = {
+                        val unread = com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.data.local.LocalStore.unreadNotifications()
+                        IconButton(onClick = onOpenNotifications) {
+                            BadgedBox(
+                                badge = {
+                                    if (unread > 0) {
+                                        Badge(containerColor = Color.Red, contentColor = Color.White) {
+                                            Text(if (unread > 9) "9+" else unread.toString())
+                                        }
+                                    }
+                                }
+                            ) {
+                                Icon(Icons.Default.Notifications, contentDescription = "Notificaciones")
+                            }
+                        }
                         IconButton(onClick = onOpenSubscription) {
                             Icon(Icons.Default.WorkspacePremium, contentDescription = "Suscripción", tint = Color(0xFFFFB300))
                         }
@@ -482,6 +499,7 @@ fun ProfileScreenPreview() {
             onCreateServiceClick = {},
             onEditServiceClick = {},
             onOpenSubscription = {},
+            onOpenNotifications = {},
             onCreateAlbum = { _, _ -> },
             onLogout = {},
             isLoading = false,
