@@ -25,6 +25,7 @@ import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.viewmodel.Org
 @Composable
 fun CreateEventScreen(
     onBackClick: () -> Unit,
+    onOpenNotifications: () -> Unit = {},
     viewModel: OrganizerViewModel = viewModel()
 ) {
     var currentStep by remember { mutableIntStateOf(1) }
@@ -48,6 +49,7 @@ fun CreateEventScreen(
                 .padding(horizontal = 16.dp)
         ) {
             AppHeader(
+                onBellClick = onOpenNotifications,
                 profileImageUrl = viewModel.profile?.profileImageUrl,
                 initials = viewModel.profile?.let {
                     "${it.firstName.firstOrNull() ?: ""}${it.lastName.firstOrNull() ?: ""}"
