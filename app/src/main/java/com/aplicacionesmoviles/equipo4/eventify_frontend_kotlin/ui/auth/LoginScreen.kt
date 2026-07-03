@@ -1,5 +1,6 @@
 package com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.auth
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -12,6 +13,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -21,8 +24,16 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.R
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.theme.EventifyfrontendkotlinTheme
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.viewmodel.AuthViewModel
+import androidx.compose.ui.platform.LocalContext
+import android.os.Build.VERSION.SDK_INT
+import coil.ImageLoader
+import coil.compose.rememberAsyncImagePainter
+import coil.decode.GifDecoder
+import coil.decode.ImageDecoderDecoder
+import coil.request.ImageRequest
 
 @Composable
 fun LoginScreen(
@@ -32,6 +43,18 @@ fun LoginScreen(
 ) {
     var passwordVisible by remember { mutableStateOf(false) }
     var rememberMe by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    val imageLoader = remember {
+        ImageLoader.Builder(context)
+            .components {
+                if (SDK_INT >= 28) {
+                    add(ImageDecoderDecoder.Factory())
+                } else {
+                    add(GifDecoder.Factory())
+                }
+            }
+            .build()
+    }
 
     LaunchedEffect(viewModel.loginSuccess) {
         if (viewModel.loginSuccess) {
@@ -53,18 +76,18 @@ fun LoginScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
+            Spacer(modifier = Modifier.weight(1f))
             // Logo and Title
-            Icon(
-                imageVector = Icons.Default.Lock,
-                contentDescription = null,
-                modifier = Modifier.size(64.dp),
-                tint = Color(0xFF2E2E8F)
-            )
-            Text(
-                text = "Eventify",
-                fontSize = 32.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF2E2E8F)
+            Image(
+                painter = rememberAsyncImagePainter(
+                    model = ImageRequest.Builder(context)
+                        .data(R.drawable.giflogo)
+                        .build(),
+                    imageLoader = imageLoader
+                ),
+                contentDescription = "Eventify Logo",
+                modifier = Modifier.height(80.dp),
+                contentScale = ContentScale.Fit
             )
             Spacer(modifier = Modifier.height(16.dp))
             Text(
