@@ -59,6 +59,10 @@ fun DashboardScreen(
         isLoading = viewModel.isLoading,
         error = viewModel.error,
         userName = viewModel.profile?.firstName ?: "Organizador",
+        profileImageUrl = viewModel.profile?.profileImageUrl,
+        initials = viewModel.profile?.let {
+            "${it.firstName.firstOrNull() ?: ""}${it.lastName.firstOrNull() ?: ""}"
+        } ?: "E",
         ratingAverage = ratingAverage,
         serviceCatalogsCount = viewModel.serviceCatalogs.size,
         reviewsCount = viewModel.reviews.size,
@@ -77,6 +81,8 @@ fun DashboardContent(
     isLoading: Boolean,
     error: String?,
     userName: String,
+    profileImageUrl: String? = null,
+    initials: String = "E",
     ratingAverage: String,
     serviceCatalogsCount: Int,
     reviewsCount: Int,
@@ -106,7 +112,11 @@ fun DashboardContent(
                         .padding(horizontal = 16.dp)
                 ) {
                     item {
-                        AppHeader(onBellClick = onOpenNotifications)
+                        AppHeader(
+                            onBellClick = onOpenNotifications,
+                            profileImageUrl = profileImageUrl,
+                            initials = initials
+                        )
                         Spacer(modifier = Modifier.height(24.dp))
                         GreetingSection(userName = userName)
                         Spacer(modifier = Modifier.height(20.dp))

@@ -38,6 +38,10 @@ fun ServiceCatalogScreen(
     ServiceCatalogContent(
         isLoading = viewModel.isLoading,
         serviceCatalogs = viewModel.serviceCatalogs,
+        profileImageUrl = viewModel.profile?.profileImageUrl,
+        initials = viewModel.profile?.let {
+            "${it.firstName.firstOrNull() ?: ""}${it.lastName.firstOrNull() ?: ""}"
+        } ?: "E",
         onCreateServiceClick = onCreateServiceClick,
         onEditServiceClick = onEditServiceClick
     )
@@ -47,6 +51,8 @@ fun ServiceCatalogScreen(
 fun ServiceCatalogContent(
     isLoading: Boolean,
     serviceCatalogs: List<ServiceCatalog>,
+    profileImageUrl: String? = null,
+    initials: String = "E",
     onCreateServiceClick: () -> Unit,
     onEditServiceClick: (Int) -> Unit
 ) {
@@ -80,7 +86,10 @@ fun ServiceCatalogContent(
                     var searchQuery by remember { mutableStateOf("") }
                     var selectedFilter by remember { mutableStateOf("Todos") }
 
-                    AppHeader()
+                    AppHeader(
+                        profileImageUrl = profileImageUrl,
+                        initials = initials
+                    )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(text = "Catálogo de servicios", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.Black)
                     Text(text = "Gestiona y actualiza los servicios que ofreces.", color = Color.Gray, fontSize = 14.sp)

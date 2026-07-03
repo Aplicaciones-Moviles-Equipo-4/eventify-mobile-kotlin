@@ -94,7 +94,8 @@ fun MainScreen(
                     viewModel = organizerViewModel
                 )
                 BottomNavItem.Mensajes -> ChatListScreen(
-                    onOpenChat = onOpenChat
+                    onOpenChat = onOpenChat,
+                    viewModel = organizerViewModel
                 )
                 BottomNavItem.Perfil -> ProfileScreen(
                     onEditProfileClick = onEditProfileClick,

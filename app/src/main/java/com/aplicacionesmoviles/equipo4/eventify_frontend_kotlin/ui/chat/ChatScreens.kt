@@ -20,18 +20,37 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.data.local.LocalStore
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.components.AppHeader
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.components.EmptyState
+import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.viewmodel.OrganizerViewModel
 
 private val Indigo = Color(0xFF2E2E8F)
 
 @Composable
-fun ChatListScreen(onOpenChat: (String) -> Unit) {
+fun ChatListScreen(
+    onOpenChat: (String) -> Unit,
+    viewModel: OrganizerViewModel = viewModel()
+) {
+    LaunchedEffect(Unit) {
+        viewModel.loadAllData()
+    }
     val conversations = LocalStore.conversations()
     Surface(modifier = Modifier.fillMaxSize(), color = Color.White) {
-        Column(modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
-            AppHeader()
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .statusBarsPadding()
+                .navigationBarsPadding()
+                .padding(horizontal = 16.dp)
+        ) {
+            AppHeader(
+                profileImageUrl = viewModel.profile?.profileImageUrl,
+                initials = viewModel.profile?.let {
+                    "${it.firstName.firstOrNull() ?: ""}${it.lastName.firstOrNull() ?: ""}"
+                } ?: "E"
+            )
             Text("Mensajes", fontSize = 24.sp, fontWeight = FontWeight.Bold)
             Spacer(Modifier.height(16.dp))
             if (conversations.isEmpty()) {

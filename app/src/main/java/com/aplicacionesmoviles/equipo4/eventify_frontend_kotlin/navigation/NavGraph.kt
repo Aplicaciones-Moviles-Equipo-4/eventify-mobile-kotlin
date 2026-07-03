@@ -158,7 +158,8 @@ fun NavGraph(
             CreateEventScreen(
                 onBackClick = {
                     navController.popBackStack()
-                }
+                },
+                viewModel = organizerViewModel
             )
         }
         composable(Screen.EventDetail.route) { backStackEntry ->

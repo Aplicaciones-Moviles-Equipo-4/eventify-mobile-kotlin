@@ -38,7 +38,11 @@ fun QuoteListScreen(
         onQuoteClick = onQuoteClick,
         onCreateQuoteClick = onCreateQuoteClick,
         isLoading = viewModel.isLoading,
-        quotes = viewModel.quotes
+        quotes = viewModel.quotes,
+        profileImageUrl = viewModel.profile?.profileImageUrl,
+        initials = viewModel.profile?.let {
+            "${it.firstName.firstOrNull() ?: ""}${it.lastName.firstOrNull() ?: ""}"
+        } ?: "E"
     )
 }
 
@@ -47,7 +51,9 @@ fun QuoteListContent(
     onQuoteClick: (String) -> Unit,
     onCreateQuoteClick: () -> Unit,
     isLoading: Boolean,
-    quotes: List<Quote>
+    quotes: List<Quote>,
+    profileImageUrl: String? = null,
+    initials: String = "E"
 ) {
     var selectedFilter by remember { mutableStateOf("Pendientes") }
     val filters = listOf("Todas", "Pendientes", "Aceptadas", "Rechazadas")
@@ -74,7 +80,10 @@ fun QuoteListContent(
                     .padding(innerPadding)
                     .padding(horizontal = 16.dp)
             ) {
-                AppHeader()
+                AppHeader(
+                    profileImageUrl = profileImageUrl,
+                    initials = initials
+                )
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(text = "Lista de cotizaciones", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.Black)
                 

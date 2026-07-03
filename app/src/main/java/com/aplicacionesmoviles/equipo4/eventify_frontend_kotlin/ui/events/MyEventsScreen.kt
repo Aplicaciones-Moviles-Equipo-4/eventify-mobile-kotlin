@@ -43,7 +43,11 @@ fun MyEventsScreen(
             viewModel.createEvent(title, place, date, customer) {}
         },
         isLoading = viewModel.isLoading,
-        events = viewModel.socialEvents
+        events = viewModel.socialEvents,
+        profileImageUrl = viewModel.profile?.profileImageUrl,
+        initials = viewModel.profile?.let {
+            "${it.firstName.firstOrNull() ?: ""}${it.lastName.firstOrNull() ?: ""}"
+        } ?: "E"
     )
 }
 
@@ -52,7 +56,9 @@ fun MyEventsContent(
     onEventClick: (String) -> Unit,
     onCreateEvent: (String, String, String, String) -> Unit,
     isLoading: Boolean,
-    events: List<SocialEvent>
+    events: List<SocialEvent>,
+    profileImageUrl: String? = null,
+    initials: String = "E"
 ) {
     var showCreateDialog by remember { mutableStateOf(false) }
 
@@ -93,7 +99,10 @@ fun MyEventsContent(
                         .padding(innerPadding)
                         .padding(horizontal = 16.dp)
                 ) {
-                    AppHeader()
+                    AppHeader(
+                        profileImageUrl = profileImageUrl,
+                        initials = initials
+                    )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(text = "Eventos", fontSize = 24.sp, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(16.dp))

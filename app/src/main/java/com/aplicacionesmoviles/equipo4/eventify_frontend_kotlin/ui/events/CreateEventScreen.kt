@@ -15,13 +15,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.components.AppHeader
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.components.DatePickerField
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.theme.EventifyfrontendkotlinTheme
+import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.viewmodel.OrganizerViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CreateEventScreen(onBackClick: () -> Unit) {
+fun CreateEventScreen(
+    onBackClick: () -> Unit,
+    viewModel: OrganizerViewModel = viewModel()
+) {
     var currentStep by remember { mutableIntStateOf(1) }
     var eventName by remember { mutableStateOf("") }
     var eventType by remember { mutableStateOf("") }
@@ -38,9 +43,16 @@ fun CreateEventScreen(onBackClick: () -> Unit) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .statusBarsPadding()
+                .navigationBarsPadding()
                 .padding(horizontal = 16.dp)
         ) {
-            AppHeader()
+            AppHeader(
+                profileImageUrl = viewModel.profile?.profileImageUrl,
+                initials = viewModel.profile?.let {
+                    "${it.firstName.firstOrNull() ?: ""}${it.lastName.firstOrNull() ?: ""}"
+                } ?: "E"
+            )
             
             Row(verticalAlignment = Alignment.CenterVertically) {
                 IconButton(onClick = {

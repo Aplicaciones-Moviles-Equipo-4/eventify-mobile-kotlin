@@ -15,16 +15,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.data.local.LocalStore
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.theme.BrandIndigo
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.theme.BrandIndigoContainer
 
 @Composable
-fun AppHeader(onBellClick: () -> Unit = {}) {
+fun AppHeader(
+    onBellClick: () -> Unit = {},
+    profileImageUrl: String? = null,
+    initials: String = "E"
+) {
     val unread = LocalStore.notifications.count { !it.read }
     Row(
         modifier = Modifier
@@ -41,7 +47,21 @@ fun AppHeader(onBellClick: () -> Unit = {}) {
                     .background(BrandIndigoContainer),
                 contentAlignment = Alignment.Center
             ) {
-                Text(text = "E", color = BrandIndigo, fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                if (!profileImageUrl.isNullOrBlank()) {
+                    AsyncImage(
+                        model = profileImageUrl,
+                        contentDescription = "Perfil",
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Text(
+                        text = initials.uppercase(),
+                        color = BrandIndigo,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp
+                    )
+                }
             }
             Spacer(modifier = Modifier.width(12.dp))
             Text(
