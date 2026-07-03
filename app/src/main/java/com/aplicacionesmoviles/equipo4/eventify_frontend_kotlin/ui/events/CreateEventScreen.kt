@@ -16,6 +16,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.components.AppHeader
+import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.components.DatePickerField
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.theme.EventifyfrontendkotlinTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -129,14 +130,7 @@ fun CreateEventScreen(onBackClick: () -> Unit) {
                 }
                 2 -> {
                     // Step 2: Cuándo y Dónde
-                    Text(text = "Fecha *", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Color.Black)
-                    OutlinedTextField(
-                        value = date,
-                        onValueChange = { date = it },
-                        modifier = Modifier.fillMaxWidth(),
-                        placeholder = { Text("dd/mm/aaaa") },
-                        shape = RoundedCornerShape(8.dp)
-                    )
+                    DatePickerField(label = "Fecha *", selectedDate = date, onDateSelected = { date = it })
                     Spacer(modifier = Modifier.height(24.dp))
                     Text(text = "Lugar *", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Color.Black)
                     OutlinedTextField(

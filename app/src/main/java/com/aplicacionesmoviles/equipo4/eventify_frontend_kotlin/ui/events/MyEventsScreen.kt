@@ -23,6 +23,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.data.remote.model.SocialEvent
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.components.AppHeader
+import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.components.DatePickerField
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.components.EmptyState
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.theme.EventifyfrontendkotlinTheme
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.viewmodel.OrganizerViewModel
@@ -130,7 +131,7 @@ private fun CreateEventDialog(
                 OutlinedTextField(value = title, onValueChange = { title = it }, label = { Text("Título") }, singleLine = true)
                 OutlinedTextField(value = customer, onValueChange = { customer = it }, label = { Text("Cliente / anfitrión") }, singleLine = true)
                 OutlinedTextField(value = place, onValueChange = { place = it }, label = { Text("Lugar") }, singleLine = true)
-                OutlinedTextField(value = date, onValueChange = { date = it }, label = { Text("Fecha (yyyy-MM-dd)") }, singleLine = true)
+                DatePickerField(label = "Fecha", selectedDate = date, onDateSelected = { date = it })
             }
         },
         confirmButton = {

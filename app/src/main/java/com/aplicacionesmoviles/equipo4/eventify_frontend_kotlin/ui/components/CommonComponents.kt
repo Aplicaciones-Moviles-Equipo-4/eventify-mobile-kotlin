@@ -4,11 +4,12 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.NotificationsNone
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -113,5 +114,84 @@ fun EmptyState(
             color = Color.Gray,
             textAlign = TextAlign.Center
         )
+    }
+}
+
+/**
+ * Reusable DatePicker field that opens a calendar dialog.
+ * Ensures dates are always in yyyy-MM-dd format.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DatePickerField(
+    label: String,
+    selectedDate: String,
+    onDateSelected: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var showDatePicker by remember { mutableStateOf(false) }
+    val datePickerState = rememberDatePickerState()
+
+    if (showDatePicker) {
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    datePickerState.selectedDateMillis?.let { millis ->
+                        val date = java.time.Instant.ofEpochMilli(millis)
+                            .atZone(java.time.ZoneId.of("UTC"))
+                            .toLocalDate()
+                        onDateSelected(date.toString())
+                    }
+                    showDatePicker = false
+                }) {
+                    Text("OK", color = BrandIndigo)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) {
+                    Text("Cancelar", color = Color.Gray)
+                }
+            }
+        ) {
+            DatePicker(
+                state = datePickerState,
+                colors = DatePickerDefaults.colors(
+                    todayContentColor = BrandIndigo,
+                    todayDateBorderColor = BrandIndigo,
+                    selectedDayContainerColor = BrandIndigo
+                )
+            )
+        }
+    }
+
+    Column(modifier = modifier) {
+        if (label.isNotEmpty()) {
+            Text(label, fontSize = 14.sp, fontWeight = FontWeight.Medium)
+            Spacer(modifier = Modifier.height(4.dp))
+        }
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { showDatePicker = true }
+        ) {
+            OutlinedTextField(
+                value = selectedDate,
+                onValueChange = {},
+                modifier = Modifier.fillMaxWidth(),
+                placeholder = { Text("yyyy-MM-dd") },
+                readOnly = true,
+                enabled = false,
+                shape = RoundedCornerShape(8.dp),
+                trailingIcon = { Icon(Icons.Default.CalendarToday, contentDescription = null) },
+                colors = OutlinedTextFieldDefaults.colors(
+                    disabledTextColor = Color.Black,
+                    disabledBorderColor = Color.Gray,
+                    disabledLabelColor = Color.Black,
+                    disabledPlaceholderColor = Color.Gray,
+                    disabledTrailingIconColor = BrandIndigo
+                )
+            )
+        }
     }
 }

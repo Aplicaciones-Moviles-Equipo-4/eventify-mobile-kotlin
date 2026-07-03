@@ -18,6 +18,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.components.DatePickerField
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.theme.EventifyfrontendkotlinTheme
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.viewmodel.OrganizerViewModel
 
@@ -102,10 +103,7 @@ fun CreateEditQuoteScreen(
 
                 Text("Cuándo y dónde", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Indigo)
                 LabeledField("Ubicación / lugar", location, { location = it }, "Dirección o recinto")
-                LabeledField("Fecha del evento", eventDate, { eventDate = it }, "yyyy-MM-dd")
-                if (eventDate.isNotBlank() && !dateValid) {
-                    Text("Formato de fecha: yyyy-MM-dd (ej. 2026-12-24)", color = Color.Red, fontSize = 12.sp)
-                }
+                DatePickerField("Fecha del evento", eventDate, { eventDate = it })
                 LabeledNumberField("ID del cliente (anfitrión)", hostId, { hostId = it })
 
                 Spacer(Modifier.height(8.dp))
