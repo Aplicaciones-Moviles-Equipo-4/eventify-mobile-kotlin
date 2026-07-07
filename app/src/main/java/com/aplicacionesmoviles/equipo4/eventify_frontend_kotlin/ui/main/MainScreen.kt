@@ -21,7 +21,7 @@ import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.viewmodel.Org
 sealed class BottomNavItem(val route: String, val icon: ImageVector, val label: String) {
     object Inicio : BottomNavItem("inicio", Icons.Outlined.Home, "Inicio")
     object Eventos : BottomNavItem("eventos", Icons.Outlined.CalendarToday, "Eventos")
-    object Cotizaciones : BottomNavItem("cotizaciones", Icons.Outlined.Description, "Cotizaciones")
+    object Cotizacion : BottomNavItem("cotizaciones", Icons.Outlined.Description, "Cotización")
     object Mensajes : BottomNavItem("mensajes", Icons.Outlined.ChatBubbleOutline, "Mensajes")
     object Explorar : BottomNavItem("explorar", Icons.Outlined.Explore, "Explorar")
     object Perfil : BottomNavItem("perfil", Icons.Outlined.Person, "Perfil")
@@ -49,7 +49,7 @@ fun MainScreen(
         listOf(
             BottomNavItem.Inicio,
             BottomNavItem.Eventos,
-            BottomNavItem.Cotizaciones,
+            BottomNavItem.Cotizacion,
             BottomNavItem.Mensajes,
             BottomNavItem.Explorar,
             BottomNavItem.Perfil
@@ -99,7 +99,7 @@ fun MainScreen(
                     onOpenNotifications = onOpenNotifications,
                     viewModel = organizerViewModel
                 )
-                BottomNavItem.Cotizaciones -> QuoteListScreen(
+                BottomNavItem.Cotizacion -> QuoteListScreen(
                     onQuoteClick = onQuoteClick,
                     onCreateQuoteClick = onCreateQuoteClick,
                     onOpenNotifications = onOpenNotifications,
