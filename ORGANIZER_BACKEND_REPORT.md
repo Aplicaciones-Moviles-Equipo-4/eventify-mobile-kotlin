@@ -1046,5 +1046,4 @@ Health check recomendado en Render:
 
 ```text
 /health
-```
-soy el mas pro
+loroooooooooooooooooooooooo
