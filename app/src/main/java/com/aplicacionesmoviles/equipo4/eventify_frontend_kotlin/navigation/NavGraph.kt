@@ -165,6 +165,9 @@ fun NavGraph(
                 onBackClick = {
                     navController.popBackStack()
                 },
+                onOpenNotifications = {
+                    navController.navigate(Screen.Notifications.route)
+                },
                 viewModel = organizerViewModel
             )
         }

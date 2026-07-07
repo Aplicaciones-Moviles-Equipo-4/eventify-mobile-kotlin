@@ -5,6 +5,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -44,8 +45,20 @@ fun MainScreen(
     authViewModel: AuthViewModel = viewModel(),
     organizerViewModel: OrganizerViewModel = viewModel()
 ) {
-    var selectedItem by remember { mutableStateOf<BottomNavItem>(BottomNavItem.Inicio) }
+    val items = remember {
+        listOf(
+            BottomNavItem.Inicio,
+            BottomNavItem.Eventos,
+            BottomNavItem.Cotizaciones,
+            BottomNavItem.Mensajes,
+            BottomNavItem.Perfil
+        )
+    }
 
+    var selectedItemRoute by rememberSaveable { mutableStateOf(BottomNavItem.Inicio.route) }
+    val selectedItem = remember(selectedItemRoute) {
+        items.find { it.route == selectedItemRoute } ?: BottomNavItem.Inicio
+    }
     val items = listOf(
         BottomNavItem.Inicio,
         BottomNavItem.Eventos,
@@ -65,8 +78,8 @@ fun MainScreen(
                     NavigationBarItem(
                         icon = { Icon(item.icon, contentDescription = item.label) },
                         label = { Text(item.label) },
-                        selected = selectedItem == item,
-                        onClick = { selectedItem = item },
+                        selected = selectedItemRoute == item.route,
+                        onClick = { selectedItemRoute = item.route },
                         colors = NavigationBarItemDefaults.colors(
                             selectedIconColor = Color(0xFF2E2E8F),
                             selectedTextColor = Color(0xFF2E2E8F),
@@ -85,20 +98,23 @@ fun MainScreen(
                     onEventClick = onEventClick,
                     onOpenNotifications = onOpenNotifications,
                     onOpenCalendar = onOpenCalendar,
-                    onOpenChat = { selectedItem = BottomNavItem.Mensajes },
+                    onOpenChat = { selectedItemRoute = BottomNavItem.Mensajes.route },
                     viewModel = organizerViewModel
                 )
                 BottomNavItem.Eventos -> MyEventsScreen(
                     onEventClick = onEventClick,
+                    onOpenNotifications = onOpenNotifications,
                     viewModel = organizerViewModel
                 )
                 BottomNavItem.Cotizaciones -> QuoteListScreen(
                     onQuoteClick = onQuoteClick,
                     onCreateQuoteClick = onCreateQuoteClick,
+                    onOpenNotifications = onOpenNotifications,
                     viewModel = organizerViewModel
                 )
                 BottomNavItem.Mensajes -> ChatListScreen(
                     onOpenChat = onOpenChat,
+                    onOpenNotifications = onOpenNotifications,
                     viewModel = organizerViewModel
                 )
                 BottomNavItem.Explorar -> ExploreScreen(
@@ -111,6 +127,7 @@ fun MainScreen(
                     onCreateServiceClick = onCreateServiceClick,
                     onEditServiceClick = onEditServiceClick,
                     onOpenSubscription = onOpenSubscription,
+                    onOpenNotifications = onOpenNotifications,
                     onLogout = {
                         authViewModel.logout()
                         onLogout()

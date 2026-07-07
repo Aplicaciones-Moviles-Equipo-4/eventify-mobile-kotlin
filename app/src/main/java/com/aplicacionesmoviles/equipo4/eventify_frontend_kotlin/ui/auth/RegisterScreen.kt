@@ -15,9 +15,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.foundation.clickable
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.foundation.text.ClickableText
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.text.SpanStyle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.theme.EventifyfrontendkotlinTheme
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.viewmodel.AuthViewModel
@@ -34,6 +42,9 @@ fun RegisterScreen(
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
+    var termsAccepted by remember { mutableStateOf(false) }
+    val uriHandler = LocalUriHandler.current
+    var activeDialogInfo by remember { mutableStateOf<DialogInfo?>(null) }
     var localError by remember { mutableStateOf<String?>(null) }
 
     val isEmailValid = android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
@@ -148,7 +159,78 @@ fun RegisterScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Terms and conditions checkbox
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Checkbox(
+                    checked = termsAccepted,
+                    onCheckedChange = { termsAccepted = it },
+                    enabled = !viewModel.isLoading
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                
+                val annotatedText = buildAnnotatedString {
+                    append("Acepto los ")
+                    pushStringAnnotation(tag = "TERMS", annotation = "terms")
+                    withStyle(
+                        style = SpanStyle(
+                            color = Color(0xFF2E2E8F),
+                            fontWeight = FontWeight.Bold,
+                            textDecoration = TextDecoration.Underline
+                        )
+                    ) {
+                        append("Términos y Condiciones")
+                    }
+                    pop()
+                    append(" y la ")
+                    pushStringAnnotation(tag = "PRIVACY", annotation = "privacy")
+                    withStyle(
+                        style = SpanStyle(
+                            color = Color(0xFF2E2E8F),
+                            fontWeight = FontWeight.Bold,
+                            textDecoration = TextDecoration.Underline
+                        )
+                    ) {
+                        append("Política de Privacidad")
+                    }
+                    pop()
+                }
+
+                ClickableText(
+                    text = annotatedText,
+                    onClick = { offset ->
+                        var clickedLink = false
+                        annotatedText.getStringAnnotations(tag = "TERMS", start = offset, end = offset)
+                            .firstOrNull()?.let {
+                                clickedLink = true
+                                activeDialogInfo = DialogInfo(
+                                    title = "Términos y Condiciones",
+                                    summary = "Al usar Eventify, aceptas nuestras reglas de uso de la plataforma. Esto incluye el compromiso de proporcionar información real al crear eventos, respetar las cotizaciones pactadas entre organizadores y proveedores, y el uso adecuado del chat y del catálogo de servicios. El incumplimiento de estas normas puede resultar en la suspensión de la cuenta.",
+                                    url = "https://aplicaciones-moviles-equipo-4.github.io/eventify-landing-page-realtec/terminoscondiciones.html"
+                                )
+                            }
+                        annotatedText.getStringAnnotations(tag = "PRIVACY", start = offset, end = offset)
+                            .firstOrNull()?.let {
+                                clickedLink = true
+                                activeDialogInfo = DialogInfo(
+                                    title = "Política de Privacidad",
+                                    summary = "Nos tomamos muy en serio la seguridad de tus datos. Recopilamos información básica de tu perfil (como nombre de usuario, correo y foto) y datos de tus eventos para garantizar el correcto funcionamiento de las cotizaciones y chat. Nunca compartiremos tu información personal con terceros sin tu consentimiento explícito.",
+                                    url = "https://aplicaciones-moviles-equipo-4.github.io/eventify-landing-page-realtec/privacidad.html"
+                                )
+                            }
+                        if (!clickedLink) {
+                            termsAccepted = !termsAccepted
+                        }
+                    },
+                    style = MaterialTheme.typography.bodyMedium.copy(color = Color.Gray)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
 
             // Register Button
             Button(
@@ -166,6 +248,7 @@ fun RegisterScreen(
                     .fillMaxWidth()
                     .height(56.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E2E8F)),
+                enabled = !viewModel.isLoading && username.isNotBlank() && password.isNotBlank() && termsAccepted
                 enabled = !viewModel.isLoading && isEmailValid &&
                         password.isNotBlank() && confirmPassword.isNotBlank()
             ) {
@@ -178,6 +261,65 @@ fun RegisterScreen(
         }
     }
     }
+
+    if (activeDialogInfo != null) {
+        AlertDialog(
+            onDismissRequest = { activeDialogInfo = null },
+            title = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.Info,
+                        contentDescription = null,
+                        tint = Color(0xFF2E2E8F),
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = activeDialogInfo!!.title,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp
+                    )
+                }
+            },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text(
+                        text = activeDialogInfo!!.summary,
+                        fontSize = 14.sp,
+                        color = Color.Gray
+                    )
+                    TextButton(
+                        onClick = {
+                            try {
+                                uriHandler.openUri(activeDialogInfo!!.url)
+                            } catch (e: Exception) {
+                                // Safe catch
+                            }
+                        },
+                        contentPadding = PaddingValues(0.dp)
+                    ) {
+                        Text(
+                            text = "Leer documento completo en el navegador",
+                            color = Color(0xFF2E2E8F),
+                            fontWeight = FontWeight.Bold,
+                            textDecoration = TextDecoration.Underline,
+                            fontSize = 13.sp
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = { activeDialogInfo = null },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E2E8F))
+                ) {
+                    Text("Entendido")
+                }
+            },
+            shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
+            containerColor = Color.White
+        )
+    }
 }
 
 @Preview(showBackground = true)
@@ -187,3 +329,9 @@ fun RegisterScreenPreview() {
         RegisterScreen(onRegisterClick = {}, onBackClick = {})
     }
 }
+
+private data class DialogInfo(
+    val title: String,
+    val summary: String,
+    val url: String
+)

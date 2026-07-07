@@ -29,6 +29,7 @@ import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.viewmodel.Org
 fun ServiceCatalogScreen(
     onCreateServiceClick: () -> Unit,
     onEditServiceClick: (Int) -> Unit,
+    onOpenNotifications: () -> Unit = {},
     viewModel: OrganizerViewModel = viewModel()
 ) {
     LaunchedEffect(Unit) {
@@ -43,7 +44,8 @@ fun ServiceCatalogScreen(
             "${it.firstName.firstOrNull() ?: ""}${it.lastName.firstOrNull() ?: ""}"
         } ?: "E",
         onCreateServiceClick = onCreateServiceClick,
-        onEditServiceClick = onEditServiceClick
+        onEditServiceClick = onEditServiceClick,
+        onOpenNotifications = onOpenNotifications
     )
 }
 
@@ -54,7 +56,8 @@ fun ServiceCatalogContent(
     profileImageUrl: String? = null,
     initials: String = "E",
     onCreateServiceClick: () -> Unit,
-    onEditServiceClick: (Int) -> Unit
+    onEditServiceClick: (Int) -> Unit,
+    onOpenNotifications: () -> Unit = {}
 ) {
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -87,6 +90,7 @@ fun ServiceCatalogContent(
                     var selectedFilter by remember { mutableStateOf("Todos") }
 
                     AppHeader(
+                        onBellClick = onOpenNotifications,
                         profileImageUrl = profileImageUrl,
                         initials = initials
                     )
@@ -232,7 +236,8 @@ fun ServiceCatalogScreenPreview() {
                 ServiceCatalog(2, 1, "Party Decoration", "Beautiful decor for all occasions", "Decoration", 200.0, 800.0)
             ),
             onCreateServiceClick = {},
-            onEditServiceClick = {}
+            onEditServiceClick = {},
+            onOpenNotifications = {}
         )
     }
 }
