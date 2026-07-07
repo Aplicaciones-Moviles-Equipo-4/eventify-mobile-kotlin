@@ -14,6 +14,7 @@ import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.chat.ChatList
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.dashboard.DashboardScreen
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.events.MyEventsScreen
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.events.QuoteListScreen
+import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.explore.ExploreScreen
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.viewmodel.AuthViewModel
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.viewmodel.OrganizerViewModel
 
@@ -22,6 +23,7 @@ sealed class BottomNavItem(val route: String, val icon: ImageVector, val label: 
     object Eventos : BottomNavItem("eventos", Icons.Outlined.CalendarToday, "Eventos")
     object Cotizaciones : BottomNavItem("cotizaciones", Icons.Outlined.Description, "Cotizaciones")
     object Mensajes : BottomNavItem("mensajes", Icons.Outlined.ChatBubbleOutline, "Mensajes")
+    object Explorar : BottomNavItem("explorar", Icons.Outlined.Explore, "Explorar")
     object Perfil : BottomNavItem("perfil", Icons.Outlined.Person, "Perfil")
 }
 
@@ -38,6 +40,7 @@ fun MainScreen(
     onOpenNotifications: () -> Unit,
     onOpenCalendar: () -> Unit,
     onOpenSubscription: () -> Unit,
+    onOrganizerClick: (Int) -> Unit,
     onLogout: () -> Unit,
     authViewModel: AuthViewModel = viewModel(),
     organizerViewModel: OrganizerViewModel = viewModel()
@@ -56,6 +59,14 @@ fun MainScreen(
     val selectedItem = remember(selectedItemRoute) {
         items.find { it.route == selectedItemRoute } ?: BottomNavItem.Inicio
     }
+    val items = listOf(
+        BottomNavItem.Inicio,
+        BottomNavItem.Eventos,
+        BottomNavItem.Cotizaciones,
+        BottomNavItem.Mensajes,
+        BottomNavItem.Explorar,
+        BottomNavItem.Perfil
+    )
 
     Scaffold(
         bottomBar = {
@@ -104,6 +115,10 @@ fun MainScreen(
                 BottomNavItem.Mensajes -> ChatListScreen(
                     onOpenChat = onOpenChat,
                     onOpenNotifications = onOpenNotifications,
+                    viewModel = organizerViewModel
+                )
+                BottomNavItem.Explorar -> ExploreScreen(
+                    onOrganizerClick = onOrganizerClick,
                     viewModel = organizerViewModel
                 )
                 BottomNavItem.Perfil -> ProfileScreen(

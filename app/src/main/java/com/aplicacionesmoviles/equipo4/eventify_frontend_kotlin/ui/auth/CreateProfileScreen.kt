@@ -27,9 +27,12 @@ fun CreateProfileScreen(
     onProfileCreated: () -> Unit,
     viewModel: OrganizerViewModel = viewModel()
 ) {
+    // The profile email must match the account email used at sign-up so that login can later
+    // resolve the profileId via getProfileByEmail. When present it is prefilled and locked.
+    val lockedEmail = viewModel.accountEmail
     var firstName by remember { mutableStateOf("") }
     var lastName by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf(lockedEmail ?: "") }
     var address by remember { mutableStateOf("") }
     var city by remember { mutableStateOf("") }
 
@@ -90,10 +93,16 @@ fun CreateProfileScreen(
                 Text("Correo electrónico", fontWeight = FontWeight.SemiBold)
                 OutlinedTextField(
                     value = email,
-                    onValueChange = { email = it },
+                    onValueChange = { if (lockedEmail == null) email = it },
                     modifier = Modifier.fillMaxWidth(),
                     placeholder = { Text("tu@correo.com") },
                     shape = RoundedCornerShape(8.dp),
+                    readOnly = lockedEmail != null,
+                    supportingText = {
+                        if (lockedEmail != null) {
+                            Text("Correo de tu cuenta (se usa para iniciar sesión)")
+                        }
+                    },
                     enabled = !viewModel.isLoading
                 )
 

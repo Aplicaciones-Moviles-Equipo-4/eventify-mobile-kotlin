@@ -53,10 +53,14 @@ data class Quote(
 data class SocialEvent(
     val id: Int,
     val title: String,
-    @SerializedName("eventDate") val date: String,
+    // Backend SocialEventResource emits "date" and "status" (not "eventDate"/"valueStatus").
+    // Field names already match the JSON keys, so Gson maps them directly.
+    val date: String,
     val customerName: String,
     val place: String,
-    @SerializedName("valueStatus") val status: String
+    val status: String,
+    // Owner (profileId). Nullable because legacy rows created before ownership tracking have none.
+    val organizerId: Int? = null
 )
 
 data class ServiceItem(
@@ -101,5 +105,6 @@ data class CreateSocialEventRequest(
     val place: String,
     val date: String,        // "yyyy-MM-dd"
     val customerName: String,
-    val status: String
+    val status: String,
+    val organizerId: Int     // profileId of the organizer creating the event
 )

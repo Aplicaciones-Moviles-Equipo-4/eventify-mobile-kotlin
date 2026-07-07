@@ -41,6 +41,9 @@ sealed class Screen(val route: String) {
     object ChatDetail : Screen("chatDetail/{contact}") {
         fun createRoute(contact: String) = "chatDetail/$contact"
     }
+    object OrganizerPublicDetail : Screen("organizerPublicDetail/{profileId}") {
+        fun createRoute(profileId: Int) = "organizerPublicDetail/$profileId"
+    }
 }
 
 @Composable
@@ -131,6 +134,9 @@ fun NavGraph(
                 onOpenSubscription = {
                     navController.navigate(Screen.Subscription.route)
                 },
+                onOrganizerClick = { profileId ->
+                    navController.navigate(Screen.OrganizerPublicDetail.createRoute(profileId))
+                },
                 onLogout = {
                     navController.navigate(Screen.Login.route) {
                         popUpTo(0) { inclusive = true }
@@ -218,6 +224,14 @@ fun NavGraph(
             com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.chat.ChatDetailScreen(
                 contactName = contact,
                 onBackClick = { navController.popBackStack() }
+            )
+        }
+        composable(Screen.OrganizerPublicDetail.route) { backStackEntry ->
+            val profileId = backStackEntry.arguments?.getString("profileId")?.toIntOrNull() ?: 0
+            com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.explore.OrganizerPublicDetailScreen(
+                profileId = profileId,
+                onBackClick = { navController.popBackStack() },
+                viewModel = organizerViewModel
             )
         }
     }

@@ -7,6 +7,9 @@ import retrofit2.http.*
 
 interface OrganizerApi {
     // Profiles
+    @GET("profiles")
+    suspend fun getAllProfiles(): Response<List<Profile>>
+
     @POST("profiles")
     suspend fun createProfile(@Body profile: Profile): Response<Profile>
 
@@ -114,6 +117,11 @@ interface OrganizerApi {
 
     @GET("customers/{customerName}/social-events")
     suspend fun getSocialEventsByCustomer(@Path("customerName") customerName: String): Response<List<SocialEvent>>
+
+    // Social events owned by the logged-in organizer (profileId) — scopes the list to the
+    // current organizer instead of returning every organizer's events.
+    @GET("organizers/{organizerId}/social-events")
+    suspend fun getSocialEventsByOrganizer(@Path("organizerId") organizerId: Int): Response<List<SocialEvent>>
 
     // Service Items (within a Quote)
     @GET("quotes/{quoteId}/service-items")

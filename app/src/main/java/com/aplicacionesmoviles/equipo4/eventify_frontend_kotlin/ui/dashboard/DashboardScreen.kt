@@ -31,6 +31,7 @@ import coil.compose.AsyncImage
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.components.AppHeader
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.theme.EventifyfrontendkotlinTheme
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.viewmodel.OrganizerViewModel
+import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.util.formatSoles
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.data.remote.model.Quote
 
 @Composable
@@ -386,7 +387,7 @@ fun PendingQuotesSection(quotes: List<Quote>) {
                         Column {
                             Text(text = quote.title, fontWeight = FontWeight.Bold)
                             Text(
-                                text = "${quote.guestQuantity} invitados • S/ ${quote.totalPrice}",
+                                text = "${quote.guestQuantity} invitados • ${formatSoles(quote.totalPrice)}",
                                 fontSize = 12.sp,
                                 color = Color.Gray
                             )
