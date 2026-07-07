@@ -1046,4 +1046,4 @@ Health check recomendado en Render:
 
 ```text
 /health
-loroooooooooooooooooooooooo
+lokura
