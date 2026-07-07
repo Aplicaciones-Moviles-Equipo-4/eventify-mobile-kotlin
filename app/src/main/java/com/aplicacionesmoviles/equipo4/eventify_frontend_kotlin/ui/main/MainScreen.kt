@@ -5,6 +5,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -20,7 +21,7 @@ import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.viewmodel.Org
 sealed class BottomNavItem(val route: String, val icon: ImageVector, val label: String) {
     object Inicio : BottomNavItem("inicio", Icons.Outlined.Home, "Inicio")
     object Eventos : BottomNavItem("eventos", Icons.Outlined.CalendarToday, "Eventos")
-    object Cotizaciones : BottomNavItem("cotizaciones", Icons.Outlined.Description, "Cotizaciones")
+    object Cotizacion : BottomNavItem("cotizaciones", Icons.Outlined.Description, "Cotización")
     object Mensajes : BottomNavItem("mensajes", Icons.Outlined.ChatBubbleOutline, "Mensajes")
     object Explorar : BottomNavItem("explorar", Icons.Outlined.Explore, "Explorar")
     object Perfil : BottomNavItem("perfil", Icons.Outlined.Person, "Perfil")
@@ -44,16 +45,21 @@ fun MainScreen(
     authViewModel: AuthViewModel = viewModel(),
     organizerViewModel: OrganizerViewModel = viewModel()
 ) {
-    var selectedItem by remember { mutableStateOf<BottomNavItem>(BottomNavItem.Inicio) }
+    val items = remember {
+        listOf(
+            BottomNavItem.Inicio,
+            BottomNavItem.Eventos,
+            BottomNavItem.Cotizacion,
+            BottomNavItem.Mensajes,
+            BottomNavItem.Explorar,
+            BottomNavItem.Perfil
+        )
+    }
 
-    val items = listOf(
-        BottomNavItem.Inicio,
-        BottomNavItem.Eventos,
-        BottomNavItem.Cotizaciones,
-        BottomNavItem.Mensajes,
-        BottomNavItem.Explorar,
-        BottomNavItem.Perfil
-    )
+    var selectedItemRoute by rememberSaveable { mutableStateOf(BottomNavItem.Inicio.route) }
+    val selectedItem = remember(selectedItemRoute) {
+        items.find { it.route == selectedItemRoute } ?: BottomNavItem.Inicio
+    }
 
     Scaffold(
         bottomBar = {
@@ -65,8 +71,8 @@ fun MainScreen(
                     NavigationBarItem(
                         icon = { Icon(item.icon, contentDescription = item.label) },
                         label = { Text(item.label) },
-                        selected = selectedItem == item,
-                        onClick = { selectedItem = item },
+                        selected = selectedItemRoute == item.route,
+                        onClick = { selectedItemRoute = item.route },
                         colors = NavigationBarItemDefaults.colors(
                             selectedIconColor = Color(0xFF2E2E8F),
                             selectedTextColor = Color(0xFF2E2E8F),
@@ -85,20 +91,23 @@ fun MainScreen(
                     onEventClick = onEventClick,
                     onOpenNotifications = onOpenNotifications,
                     onOpenCalendar = onOpenCalendar,
-                    onOpenChat = { selectedItem = BottomNavItem.Mensajes },
+                    onOpenChat = { selectedItemRoute = BottomNavItem.Mensajes.route },
                     viewModel = organizerViewModel
                 )
                 BottomNavItem.Eventos -> MyEventsScreen(
                     onEventClick = onEventClick,
+                    onOpenNotifications = onOpenNotifications,
                     viewModel = organizerViewModel
                 )
-                BottomNavItem.Cotizaciones -> QuoteListScreen(
+                BottomNavItem.Cotizacion -> QuoteListScreen(
                     onQuoteClick = onQuoteClick,
                     onCreateQuoteClick = onCreateQuoteClick,
+                    onOpenNotifications = onOpenNotifications,
                     viewModel = organizerViewModel
                 )
                 BottomNavItem.Mensajes -> ChatListScreen(
                     onOpenChat = onOpenChat,
+                    onOpenNotifications = onOpenNotifications,
                     viewModel = organizerViewModel
                 )
                 BottomNavItem.Explorar -> ExploreScreen(
@@ -111,6 +120,7 @@ fun MainScreen(
                     onCreateServiceClick = onCreateServiceClick,
                     onEditServiceClick = onEditServiceClick,
                     onOpenSubscription = onOpenSubscription,
+                    onOpenNotifications = onOpenNotifications,
                     onLogout = {
                         authViewModel.logout()
                         onLogout()

@@ -25,6 +25,7 @@ import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.viewmodel.Org
 @Composable
 fun CreateEventScreen(
     onBackClick: () -> Unit,
+    onOpenNotifications: () -> Unit = {},
     viewModel: OrganizerViewModel = viewModel()
 ) {
     var currentStep by remember { mutableIntStateOf(1) }
@@ -40,14 +41,17 @@ fun CreateEventScreen(
         modifier = Modifier.fillMaxSize(),
         color = Color.White
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .statusBarsPadding()
-                .navigationBarsPadding()
-                .padding(horizontal = 16.dp)
-        ) {
+        Scaffold(
+            contentWindowInsets = WindowInsets.safeDrawing
+        ) { innerPadding ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .padding(horizontal = 16.dp)
+            ) {
             AppHeader(
+                onBellClick = onOpenNotifications,
                 profileImageUrl = viewModel.profile?.profileImageUrl,
                 initials = viewModel.profile?.let {
                     "${it.firstName.firstOrNull() ?: ""}${it.lastName.firstOrNull() ?: ""}"
@@ -206,6 +210,7 @@ fun CreateEventScreen(
             Spacer(modifier = Modifier.height(24.dp))
         }
     }
+}
 }
 
 @Preview(showBackground = true)

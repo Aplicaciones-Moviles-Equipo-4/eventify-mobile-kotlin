@@ -109,7 +109,7 @@ fun LoginScreen(
                 value = username,
                 onValueChange = { username = it },
                 modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("admin_eventos") },
+                placeholder = { Text("Tu Usuario") },
                 leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
                 singleLine = true,
                 enabled = !viewModel.isLoading
@@ -127,7 +127,7 @@ fun LoginScreen(
                 value = password,
                 onValueChange = { password = it },
                 modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("••••••••") },
+                placeholder = { Text("Contraseña") },
                 leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
                 trailingIcon = {
                     IconButton(onClick = { passwordVisible = !passwordVisible }) {

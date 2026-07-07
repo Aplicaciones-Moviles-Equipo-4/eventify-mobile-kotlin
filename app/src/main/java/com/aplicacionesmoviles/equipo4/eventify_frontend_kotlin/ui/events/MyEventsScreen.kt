@@ -31,6 +31,7 @@ import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.viewmodel.Org
 @Composable
 fun MyEventsScreen(
     onEventClick: (String) -> Unit,
+    onOpenNotifications: () -> Unit = {},
     viewModel: OrganizerViewModel = viewModel()
 ) {
     LaunchedEffect(Unit) {
@@ -39,6 +40,7 @@ fun MyEventsScreen(
 
     MyEventsContent(
         onEventClick = onEventClick,
+        onOpenNotifications = onOpenNotifications,
         onCreateEvent = { title, place, date, customer ->
             viewModel.createEvent(title, place, date, customer) {}
         },
@@ -54,6 +56,7 @@ fun MyEventsScreen(
 @Composable
 fun MyEventsContent(
     onEventClick: (String) -> Unit,
+    onOpenNotifications: () -> Unit = {},
     onCreateEvent: (String, String, String, String) -> Unit,
     isLoading: Boolean,
     events: List<SocialEvent>,
@@ -77,6 +80,7 @@ fun MyEventsContent(
         color = MaterialTheme.colorScheme.background
     ) {
         Scaffold(
+            contentWindowInsets = WindowInsets(0.dp, 0.dp, 0.dp, 0.dp),
             floatingActionButton = {
                 FloatingActionButton(
                     onClick = { showCreateDialog = true },
@@ -100,6 +104,7 @@ fun MyEventsContent(
                         .padding(horizontal = 16.dp)
                 ) {
                     AppHeader(
+                        onBellClick = onOpenNotifications,
                         profileImageUrl = profileImageUrl,
                         initials = initials
                     )
@@ -256,6 +261,7 @@ fun MyEventsScreenPreview() {
     EventifyfrontendkotlinTheme {
         MyEventsContent(
             onEventClick = {},
+            onOpenNotifications = {},
             onCreateEvent = { _, _, _, _ -> },
             isLoading = false,
             events = emptyList()

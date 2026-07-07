@@ -31,6 +31,7 @@ private val Indigo = Color(0xFF2E2E8F)
 @Composable
 fun ChatListScreen(
     onOpenChat: (String) -> Unit,
+    onOpenNotifications: () -> Unit = {},
     viewModel: OrganizerViewModel = viewModel()
 ) {
     LaunchedEffect(Unit) {
@@ -41,11 +42,10 @@ fun ChatListScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .statusBarsPadding()
-                .navigationBarsPadding()
                 .padding(horizontal = 16.dp)
         ) {
             AppHeader(
+                onBellClick = onOpenNotifications,
                 profileImageUrl = viewModel.profile?.profileImageUrl,
                 initials = viewModel.profile?.let {
                     "${it.firstName.firstOrNull() ?: ""}${it.lastName.firstOrNull() ?: ""}"
