@@ -95,23 +95,20 @@ fun DashboardContent(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ) {
-        Scaffold(
-        ) { innerPadding ->
-            if (isLoading) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(color = Color(0xFF2E2E8F))
-                }
-            } else if (error != null) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(text = error, color = Color.Red, modifier = Modifier.padding(16.dp))
-                }
-            } else {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(innerPadding)
-                        .padding(horizontal = 16.dp)
-                ) {
+        if (isLoading) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(color = Color(0xFF2E2E8F))
+            }
+        } else if (error != null) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text(text = error, color = Color.Red, modifier = Modifier.padding(16.dp))
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp)
+            ) {
                     item {
                         AppHeader(
                             onBellClick = onOpenNotifications,
@@ -166,7 +163,6 @@ fun DashboardContent(
                         PendingQuotesSection(quotes = quotes.filter { it.state == "PENDING" })
                         Spacer(modifier = Modifier.height(80.dp))
                     }
-                }
             }
         }
     }

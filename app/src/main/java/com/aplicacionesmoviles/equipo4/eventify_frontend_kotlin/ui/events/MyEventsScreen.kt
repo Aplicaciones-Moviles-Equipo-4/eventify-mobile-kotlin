@@ -80,6 +80,7 @@ fun MyEventsContent(
         color = MaterialTheme.colorScheme.background
     ) {
         Scaffold(
+            contentWindowInsets = WindowInsets(0.dp, 0.dp, 0.dp, 0.dp),
             floatingActionButton = {
                 FloatingActionButton(
                     onClick = { showCreateDialog = true },

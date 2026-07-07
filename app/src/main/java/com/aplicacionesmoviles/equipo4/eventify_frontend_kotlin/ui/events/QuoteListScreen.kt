@@ -68,6 +68,7 @@ fun QuoteListContent(
         color = Color.White
     ) {
         Scaffold(
+            contentWindowInsets = WindowInsets(0.dp, 0.dp, 0.dp, 0.dp),
             floatingActionButton = {
                 FloatingActionButton(
                     onClick = onCreateQuoteClick,
