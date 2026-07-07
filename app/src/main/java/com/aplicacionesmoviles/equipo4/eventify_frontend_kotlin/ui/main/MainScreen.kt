@@ -51,6 +51,7 @@ fun MainScreen(
             BottomNavItem.Eventos,
             BottomNavItem.Cotizaciones,
             BottomNavItem.Mensajes,
+            BottomNavItem.Explorar,
             BottomNavItem.Perfil
         )
     }
@@ -59,14 +60,6 @@ fun MainScreen(
     val selectedItem = remember(selectedItemRoute) {
         items.find { it.route == selectedItemRoute } ?: BottomNavItem.Inicio
     }
-    val items = listOf(
-        BottomNavItem.Inicio,
-        BottomNavItem.Eventos,
-        BottomNavItem.Cotizaciones,
-        BottomNavItem.Mensajes,
-        BottomNavItem.Explorar,
-        BottomNavItem.Perfil
-    )
 
     Scaffold(
         bottomBar = {

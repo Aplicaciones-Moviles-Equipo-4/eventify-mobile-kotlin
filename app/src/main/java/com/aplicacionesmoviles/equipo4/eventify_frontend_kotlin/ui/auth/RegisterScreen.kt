@@ -248,9 +248,7 @@ fun RegisterScreen(
                     .fillMaxWidth()
                     .height(56.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E2E8F)),
-                enabled = !viewModel.isLoading && username.isNotBlank() && password.isNotBlank() && termsAccepted
-                enabled = !viewModel.isLoading && isEmailValid &&
-                        password.isNotBlank() && confirmPassword.isNotBlank()
+                enabled = !viewModel.isLoading && isEmailValid && password.isNotBlank() && confirmPassword.isNotBlank() && termsAccepted
             ) {
                 if (viewModel.isLoading) {
                     CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
