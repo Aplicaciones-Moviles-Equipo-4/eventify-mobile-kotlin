@@ -20,6 +20,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.theme.EventifyfrontendkotlinTheme
 
+/**
+ * Pestaña de Tareas que permite visualizar y filtrar las tareas de un evento por su estado.
+ * Proporciona una vista rápida de las tareas pendientes, en progreso y completadas.
+ */
 @Composable
 fun TasksTab() {
     var selectedStatusIndex by remember { mutableStateOf(1) } // "En progreso"
@@ -70,8 +74,21 @@ fun TasksTab() {
     }
 }
 
+/**
+ * Modelo de datos que representa una tarea individual en la lista.
+ *
+ * @property title El título descriptivo de la tarea.
+ * @property priority El nivel de importancia de la tarea (ej. "Alta", "Media").
+ * @property date La fecha límite o programada para la tarea.
+ * @property assignee Iniciales de la persona responsable de la tarea (opcional).
+ */
 data class TaskItem(val title: String, val priority: String, val date: String, val assignee: String?)
 
+/**
+ * Tarjeta visual para mostrar los detalles de una tarea específica.
+ *
+ * @param task El objeto [TaskItem] que contiene la información de la tarea a mostrar.
+ */
 @Composable
 fun TaskCard(task: TaskItem) {
     Card(
