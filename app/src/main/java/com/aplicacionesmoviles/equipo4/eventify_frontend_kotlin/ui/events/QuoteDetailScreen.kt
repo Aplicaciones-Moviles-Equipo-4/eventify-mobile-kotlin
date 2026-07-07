@@ -23,6 +23,7 @@ import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.data.remote.mode
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.data.remote.model.ServiceItem
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.theme.EventifyfrontendkotlinTheme
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.viewmodel.OrganizerViewModel
+import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.util.formatSoles
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -81,9 +82,14 @@ fun QuoteDetailScreen(
                         viewModel.loadAllData()
                     }
                 } else {
-                    viewModel.updateServiceItem(quoteId, editingItem!!.id!!, newItem) {
+                    val itemId = editingItem?.id
+                    if (itemId != null) {
+                        viewModel.updateServiceItem(quoteId, itemId, newItem) {
+                            editingItem = null
+                            viewModel.loadAllData()
+                        }
+                    } else {
                         editingItem = null
-                        viewModel.loadAllData()
                     }
                 }
             }
@@ -141,7 +147,7 @@ fun QuoteDetailScreen(
                         ServiceItemRow(
                             item = item,
                             onEdit = { editingItem = it },
-                            onDelete = { viewModel.removeServiceItem(quoteId, it.id!!) }
+                            onDelete = { item.id?.let { id -> viewModel.removeServiceItem(quoteId, id) } }
                         )
                     }
                 }
@@ -172,7 +178,7 @@ fun QuoteInfoSection(quote: Quote) {
             }
             Column(horizontalAlignment = Alignment.End) {
                 Text(text = "TOTAL", fontSize = 10.sp, color = Color.Gray, fontWeight = FontWeight.Bold)
-                Text(text = "S/ ${quote.totalPrice}", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color(0xFF2E2E8F))
+                Text(text = formatSoles(quote.totalPrice), fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color(0xFF2E2E8F))
             }
         }
         
@@ -203,9 +209,9 @@ fun ServiceItemRow(
         Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(text = item.description, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Color.Black)
-                Text(text = "${item.quantity} x S/ ${item.unitPrice}", fontSize = 12.sp, color = Color.Gray)
+                Text(text = "${item.quantity} x ${formatSoles(item.unitPrice)}", fontSize = 12.sp, color = Color.Gray)
             }
-            Text(text = "S/ ${item.totalPrice}", fontWeight = FontWeight.Bold, color = Color(0xFF2E2E8F))
+            Text(text = formatSoles(item.totalPrice), fontWeight = FontWeight.Bold, color = Color(0xFF2E2E8F))
             Spacer(modifier = Modifier.width(8.dp))
             IconButton(onClick = { onEdit(item) }, modifier = Modifier.size(24.dp)) {
                 Icon(Icons.Default.Edit, contentDescription = "Edit", modifier = Modifier.size(16.dp), tint = Color.Gray)

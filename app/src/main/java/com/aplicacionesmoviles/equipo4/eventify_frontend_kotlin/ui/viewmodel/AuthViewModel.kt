@@ -87,10 +87,13 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     /** Performs the sign-in call and persists the token. Returns true on success. */
     private suspend fun authenticate(user: String, pass: String): Boolean {
         val response = NetworkModule.authApi.signIn(SignInRequest(user, pass))
-        if (response.isSuccessful && response.body() != null) {
-            val token = response.body()!!.token
-            sessionManager.token = token
-            NetworkModule.setAuthToken(token)
+        val body = response.body()
+        if (response.isSuccessful && body != null) {
+            sessionManager.token = body.token
+            // Persist the login identifier. For real users this is their email, later reused
+            // as the Profile email so the profileId can be resolved on subsequent logins.
+            sessionManager.accountEmail = user
+            NetworkModule.setAuthToken(body.token)
             return true
         }
         return false
@@ -105,8 +108,9 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
             if (user == "organizador_vip") "contacto@eventoselegantes.com" else user
         try {
             val profileRes = NetworkModule.organizerApi.getProfileByEmail(emailToSearch)
+            val profile = profileRes.body()
             sessionManager.profileId =
-                if (profileRes.isSuccessful && profileRes.body() != null) profileRes.body()!!.id else -1
+                if (profileRes.isSuccessful && profile != null) profile.id else -1
         } catch (e: Exception) {
             sessionManager.profileId = -1
         }

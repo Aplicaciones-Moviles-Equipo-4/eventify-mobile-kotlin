@@ -14,6 +14,14 @@ class SessionManager(context: Context) {
         get() = prefs.getInt("profile_id", -1)
         set(value) = prefs.edit().putInt("profile_id", value).apply()
 
+    /**
+     * The account login identifier. For real users it is their email, which is reused as the
+     * Profile email so `getProfileByEmail` can resolve the profileId on later logins.
+     */
+    var accountEmail: String?
+        get() = prefs.getString("account_email", null)
+        set(value) = prefs.edit().putString("account_email", value).apply()
+
     fun logout() {
         prefs.edit().clear().apply()
     }

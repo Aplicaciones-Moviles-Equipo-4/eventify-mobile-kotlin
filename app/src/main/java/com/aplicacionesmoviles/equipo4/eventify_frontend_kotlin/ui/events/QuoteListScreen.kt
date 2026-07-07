@@ -23,6 +23,7 @@ import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.components.Ap
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.components.EmptyState
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.theme.EventifyfrontendkotlinTheme
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.viewmodel.OrganizerViewModel
+import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.util.formatSoles
 
 @Composable
 fun QuoteListScreen(
@@ -56,6 +57,7 @@ fun QuoteListContent(
     initials: String = "E"
 ) {
     var selectedFilter by remember { mutableStateOf("Todas") }
+    var searchQuery by remember { mutableStateOf("") }
     val filters = listOf("Todas", "Pendientes", "Aceptadas", "Rechazadas")
 
     Surface(
@@ -88,8 +90,8 @@ fun QuoteListContent(
                 Text(text = "Lista de cotizaciones", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.Black)
                 
                 Spacer(modifier = Modifier.height(16.dp))
-                QuoteSearchBar()
-                
+                QuoteSearchBar(value = searchQuery, onValueChange = { searchQuery = it })
+
                 Spacer(modifier = Modifier.height(16.dp))
                 ScrollableTabRow(
                     selectedTabIndex = filters.indexOf(selectedFilter),
@@ -114,11 +116,17 @@ fun QuoteListContent(
                         CircularProgressIndicator(color = Color(0xFF2E2E8F))
                     }
                 } else {
-                    val filteredQuotes = when (selectedFilter) {
+                    val byStatus = when (selectedFilter) {
                         "Pendientes" -> quotes.filter { it.state == "PENDING" }
                         "Aceptadas" -> quotes.filter { it.state == "ACCEPTED" }
                         "Rechazadas" -> quotes.filter { it.state == "REJECTED" }
                         else -> quotes
+                    }
+                    val query = searchQuery.trim()
+                    val filteredQuotes = if (query.isBlank()) byStatus else byStatus.filter {
+                        it.title.contains(query, ignoreCase = true) ||
+                            it.eventType.contains(query, ignoreCase = true) ||
+                            it.location.contains(query, ignoreCase = true)
                     }
 
                     if (filteredQuotes.isEmpty()) {
@@ -144,12 +152,13 @@ fun QuoteListContent(
 }
 
 @Composable
-private fun QuoteSearchBar() {
+private fun QuoteSearchBar(value: String, onValueChange: (String) -> Unit) {
     OutlinedTextField(
-        value = "",
-        onValueChange = {},
+        value = value,
+        onValueChange = onValueChange,
         modifier = Modifier.fillMaxWidth(),
-        placeholder = { Text("Boda...") },
+        singleLine = true,
+        placeholder = { Text("Buscar por título, tipo o lugar...") },
         leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
         shape = RoundedCornerShape(12.dp),
         colors = OutlinedTextFieldDefaults.colors(
@@ -186,7 +195,7 @@ fun QuoteCard(quote: Quote, onQuoteClick: (String) -> Unit) {
             Spacer(modifier = Modifier.height(16.dp))
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 Text(text = "TOTAL ESTIMADO", fontSize = 10.sp, color = Color.Gray, fontWeight = FontWeight.Bold)
-                Text(text = "S/ ${quote.totalPrice}", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFF2E2E8F))
+                Text(text = formatSoles(quote.totalPrice), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFF2E2E8F))
             }
         }
     }

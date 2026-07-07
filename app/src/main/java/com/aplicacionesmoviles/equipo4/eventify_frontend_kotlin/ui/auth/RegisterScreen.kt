@@ -29,9 +29,14 @@ fun RegisterScreen(
     onBackClick: () -> Unit,
     viewModel: AuthViewModel = viewModel()
 ) {
-    var username by remember { mutableStateOf("") }
+    // The account is identified by email: the same value is reused as the Profile email so that
+    // login can resolve the profileId later via getProfileByEmail.
+    var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
+    var localError by remember { mutableStateOf<String?>(null) }
+
+    val isEmailValid = android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
 
     LaunchedEffect(viewModel.registerSuccess) {
         if (viewModel.registerSuccess) {
@@ -71,18 +76,25 @@ fun RegisterScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Username field
+            // Email field (doubles as the account username and the profile email)
             Text(
-                text = "Nombre de usuario",
+                text = "Correo electrónico",
                 modifier = Modifier.fillMaxWidth(),
                 fontWeight = FontWeight.SemiBold
             )
             OutlinedTextField(
-                value = username,
-                onValueChange = { username = it },
+                value = email,
+                onValueChange = { email = it; localError = null },
                 modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("admin_eventos") },
+                placeholder = { Text("tu@correo.com") },
                 leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                isError = email.isNotBlank() && !isEmailValid,
+                supportingText = {
+                    if (email.isNotBlank() && !isEmailValid) {
+                        Text("Ingresa un correo válido")
+                    }
+                },
                 singleLine = true,
                 enabled = !viewModel.isLoading
             )
@@ -127,9 +139,10 @@ fun RegisterScreen(
                 enabled = !viewModel.isLoading
             )
 
-            if (viewModel.error != null) {
+            val errorMessage = localError ?: viewModel.error
+            if (errorMessage != null) {
                 Text(
-                    text = viewModel.error!!,
+                    text = errorMessage,
                     color = Color.Red,
                     modifier = Modifier.padding(top = 8.dp)
                 )
@@ -140,17 +153,21 @@ fun RegisterScreen(
             // Register Button
             Button(
                 onClick = {
-                    if (password == confirmPassword) {
-                        viewModel.signUp(username, password)
-                    } else {
-                        // Simple local validation error could be set in viewModel or here
+                    localError = when {
+                        !isEmailValid -> "Ingresa un correo válido"
+                        password != confirmPassword -> "Las contraseñas no coinciden"
+                        else -> null
+                    }
+                    if (localError == null) {
+                        viewModel.signUp(email.trim(), password)
                     }
                 },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E2E8F)),
-                enabled = !viewModel.isLoading && username.isNotBlank() && password.isNotBlank()
+                enabled = !viewModel.isLoading && isEmailValid &&
+                        password.isNotBlank() && confirmPassword.isNotBlank()
             ) {
                 if (viewModel.isLoading) {
                     CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))

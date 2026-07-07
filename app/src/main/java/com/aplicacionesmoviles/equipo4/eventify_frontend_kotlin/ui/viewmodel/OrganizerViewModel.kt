@@ -33,6 +33,9 @@ class OrganizerViewModel(application: Application) : AndroidViewModel(applicatio
     
     private val profileId get() = sessionManager.profileId
 
+    /** Email used to log in; reused as the Profile email so login can resolve the profileId. */
+    val accountEmail: String? get() = sessionManager.accountEmail
+
     fun loadAllData() {
         val currentProfileId = sessionManager.profileId
         if (currentProfileId == -1) {
@@ -74,7 +77,8 @@ class OrganizerViewModel(application: Application) : AndroidViewModel(applicatio
                 val quotesRes = NetworkModule.organizerApi.getOrganizerQuotes(currentProfileId)
                 if (quotesRes.isSuccessful) quotes = quotesRes.body() ?: emptyList()
 
-                val socialEventsRes = NetworkModule.organizerApi.getSocialEvents()
+                // Scope events to this organizer instead of listing every organizer's events.
+                val socialEventsRes = NetworkModule.organizerApi.getSocialEventsByOrganizer(currentProfileId)
                 if (socialEventsRes.isSuccessful) {
                     socialEvents = socialEventsRes.body() ?: emptyList()
                 }
@@ -326,7 +330,8 @@ class OrganizerViewModel(application: Application) : AndroidViewModel(applicatio
                     place = place,
                     date = date,
                     customerName = customerName,
-                    status = "Active"
+                    status = "Active",
+                    organizerId = sessionManager.profileId
                 )
                 val res = NetworkModule.organizerApi.createSocialEvent(body)
                 if (res.isSuccessful) {
