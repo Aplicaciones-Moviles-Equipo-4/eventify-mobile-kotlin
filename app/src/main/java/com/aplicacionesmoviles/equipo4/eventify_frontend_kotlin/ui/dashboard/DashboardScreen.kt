@@ -34,6 +34,16 @@ import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.ui.viewmodel.Org
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.util.formatSoles
 import com.aplicacionesmoviles.equipo4.eventify_frontend_kotlin.data.remote.model.Quote
 
+/**
+ * Pantalla principal del Dashboard para el organizador.
+ * Gestiona la carga de datos a través del [OrganizerViewModel] y muestra el contenido principal.
+ *
+ * @param onEventClick Función de callback que se ejecuta al hacer clic en un evento, recibe el ID del evento.
+ * @param onOpenNotifications Función de callback para abrir la pantalla de notificaciones.
+ * @param onOpenCalendar Función de callback para abrir el calendario.
+ * @param onOpenChat Función de callback para abrir el chat.
+ * @param viewModel ViewModel que proporciona los datos del organizador.
+ */
 @Composable
 fun DashboardScreen(
     onEventClick: (String) -> Unit,
@@ -73,6 +83,26 @@ fun DashboardScreen(
     )
 }
 
+/**
+ * Contenido visual de la pantalla de Dashboard.
+ * Muestra el encabezado, acciones rápidas, métricas de resumen, eventos próximos y cotizaciones pendientes.
+ *
+ * @param onEventClick Callback para manejar clics en eventos.
+ * @param onOpenNotifications Callback para abrir notificaciones.
+ * @param onOpenCalendar Callback para abrir el calendario.
+ * @param onOpenChat Callback para abrir el chat.
+ * @param isLoading Indica si los datos se están cargando actualmente.
+ * @param error Mensaje de error si la carga falló, de lo contrario nulo.
+ * @param userName Nombre del usuario para el saludo.
+ * @param profileImageUrl URL de la imagen de perfil del usuario.
+ * @param initials Iniciales del usuario para mostrar si no hay imagen.
+ * @param ratingAverage Promedio de calificación del organizador.
+ * @param serviceCatalogsCount Cantidad de servicios publicados.
+ * @param reviewsCount Cantidad total de reseñas recibidas.
+ * @param albumsCount Cantidad de álbumes creados.
+ * @param quotes Lista de cotizaciones para mostrar.
+ * @param socialEvents Lista de eventos sociales próximos.
+ */
 @Composable
 fun DashboardContent(
     onEventClick: (String) -> Unit,
@@ -172,6 +202,14 @@ fun DashboardContent(
     }
 }
 
+/**
+ * Fila de acciones rápidas para acceso directo a funciones comunes.
+ * Incluye accesos a Calendario, Mensajes y Alertas.
+ *
+ * @param onOpenCalendar Callback para abrir el calendario.
+ * @param onOpenChat Callback para abrir el chat.
+ * @param onOpenNotifications Callback para abrir notificaciones.
+ */
 @Composable
 fun QuickActionsRow(
     onOpenCalendar: () -> Unit,
@@ -189,6 +227,15 @@ fun QuickActionsRow(
     }
 }
 
+/**
+ * Componente individual para una acción rápida en el Dashboard.
+ *
+ * @param label Etiqueta de texto para la acción.
+ * @param icon Icono representativo de la acción.
+ * @param modifier Modificador para personalizar el diseño.
+ * @param badge Número opcional para mostrar una insignia de notificación.
+ * @param onClick Función que se ejecuta al presionar la acción.
+ */
 @Composable
 private fun QuickAction(
     label: String,
@@ -228,6 +275,11 @@ private fun QuickAction(
     }
 }
 
+/**
+ * Sección de saludo personalizada para el usuario.
+ *
+ * @param userName Nombre del usuario a saludar.
+ */
 @Composable
 fun GreetingSection(userName: String) {
     Column {
@@ -236,6 +288,15 @@ fun GreetingSection(userName: String) {
     }
 }
 
+/**
+ * Cuadrícula que muestra las métricas de resumen del organizador.
+ * Incluye calificación, servicios, reseñas y álbumes.
+ *
+ * @param rating Promedio de calificación.
+ * @param servicesCount Total de servicios.
+ * @param reviewsCount Total de reseñas.
+ * @param albumsCount Total de álbumes.
+ */
 @Composable
 fun SummaryGrid(
     rating: String,
@@ -282,6 +343,15 @@ fun SummaryGrid(
     }
 }
 
+/**
+ * Tarjeta individual para mostrar una métrica específica en el resumen.
+ *
+ * @param title Título de la métrica.
+ * @param value Valor de la métrica.
+ * @param icon Icono asociado a la métrica.
+ * @param modifier Modificador para el diseño.
+ * @param iconColor Color del icono.
+ */
 @Composable
 fun SummaryCard(
     title: String,
@@ -315,6 +385,15 @@ fun SummaryCard(
     }
 }
 
+/**
+ * Tarjeta detallada para mostrar un evento destacado.
+ *
+ * @param title Título del evento.
+ * @param date Fecha del evento.
+ * @param location Ubicación del evento.
+ * @param customerName Nombre del cliente asociado.
+ * @param onEventClick Callback para ver detalles del evento.
+ */
 @Composable
 fun FeaturedEventCard(
     title: String,
@@ -367,6 +446,11 @@ fun FeaturedEventCard(
     }
 }
 
+/**
+ * Sección que lista las cotizaciones que requieren atención.
+ *
+ * @param quotes Lista de cotizaciones en estado pendiente.
+ */
 @Composable
 fun PendingQuotesSection(quotes: List<Quote>) {
     Column {
