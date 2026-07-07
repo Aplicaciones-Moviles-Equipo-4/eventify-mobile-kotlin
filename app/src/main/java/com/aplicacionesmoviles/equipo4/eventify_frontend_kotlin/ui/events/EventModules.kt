@@ -25,6 +25,12 @@ private val Indigo = Color(0xFF2E2E8F)
 
 // ============================ TASKS / KANBAN ============================
 
+/**
+ * Pestaña que muestra un tablero Kanban para la gestión de tareas de un evento.
+ * Permite visualizar, crear, editar, eliminar y mover tareas entre estados.
+ *
+ * @param eventId Identificador del evento al que pertenecen las tareas.
+ */
 @Composable
 fun TasksKanbanTab(eventId: String) {
     var selectedStatus by remember { mutableStateOf(TaskStatus.PENDIENTE) }
@@ -111,6 +117,15 @@ fun TasksKanbanTab(eventId: String) {
     }
 }
 
+/**
+ * Tarjeta individual que representa una tarea en el tablero Kanban.
+ *
+ * @param task Objeto de la tarea a mostrar.
+ * @param onEdit Callback para editar la tarea.
+ * @param onDelete Callback para eliminar la tarea.
+ * @param onMovePrev Callback para mover la tarea al estado anterior (opcional).
+ * @param onMoveNext Callback para mover la tarea al siguiente estado (opcional).
+ */
 @Composable
 private fun KanbanTaskCard(
     task: LocalTask,
@@ -179,6 +194,11 @@ private fun KanbanTaskCard(
     }
 }
 
+/**
+ * Etiqueta visual que indica el nivel de prioridad de una tarea.
+ *
+ * @param priority Nivel de prioridad (ALTA, MEDIA, BAJA).
+ */
 @Composable
 private fun PriorityChip(priority: TaskPriority) {
     val (bg, fg, label) = when (priority) {
@@ -191,6 +211,13 @@ private fun PriorityChip(priority: TaskPriority) {
     }
 }
 
+/**
+ * Diálogo para la creación o edición de una tarea.
+ *
+ * @param task Tarea a editar, o nulo si se está creando una nueva.
+ * @param onDismiss Callback para cerrar el diálogo.
+ * @param onSave Callback ejecutado al guardar la tarea.
+ */
 @Composable
 private fun TaskDialog(
     task: LocalTask?,
@@ -231,6 +258,12 @@ private fun TaskDialog(
 
 // ============================ CRONOGRAMA ============================
 
+/**
+ * Pestaña de cronograma que muestra la agenda de actividades del evento.
+ * Permite registrar nuevas actividades y marcarlas como completadas.
+ *
+ * @param eventId Identificador del evento asociado.
+ */
 @Composable
 fun CronogramaTab(eventId: String) {
     var showDialog by remember { mutableStateOf(false) }
@@ -307,6 +340,12 @@ fun CronogramaTab(eventId: String) {
 
 // ============================ PRESUPUESTO ============================
 
+/**
+ * Pestaña de presupuesto para la gestión financiera del evento.
+ * Permite definir un presupuesto total y registrar gastos por categoría.
+ *
+ * @param eventId Identificador del evento asociado.
+ */
 @Composable
 fun BudgetTab(eventId: String) {
     var showBudgetDialog by remember { mutableStateOf(false) }
@@ -443,13 +482,19 @@ fun BudgetTab(eventId: String) {
 
 // ============================ helpers ============================
 
-/** Small helper: status ordering for the Kanban move buttons. */
+/** 
+ * Pequeño ayudante: orden de estados para los botones de movimiento en Kanban.
+ * Determina el siguiente estado lógico de una tarea.
+ */
 private fun LocalStore.nextStatus(status: TaskStatus): TaskStatus? = when (status) {
     TaskStatus.PENDIENTE -> TaskStatus.EN_PROGRESO
     TaskStatus.EN_PROGRESO -> TaskStatus.COMPLETADA
     TaskStatus.COMPLETADA -> null
 }
 
+/** 
+ * Pequeño ayudante: determina el estado anterior lógico de una tarea en Kanban.
+ */
 private fun LocalStore.prevStatus(status: TaskStatus): TaskStatus? = when (status) {
     TaskStatus.PENDIENTE -> null
     TaskStatus.EN_PROGRESO -> TaskStatus.PENDIENTE
