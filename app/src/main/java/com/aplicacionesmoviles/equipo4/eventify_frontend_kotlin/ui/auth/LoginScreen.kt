@@ -62,8 +62,8 @@ fun LoginScreen(
         }
     }
 
-    var username by remember { mutableStateOf("organizador_vip") }
-    var password by remember { mutableStateOf("prueba123") }
+    var username by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
 
     Surface(
         modifier = Modifier.fillMaxSize(),

@@ -15,8 +15,8 @@ import kotlinx.coroutines.launch
 class AuthViewModel(application: Application) : AndroidViewModel(application) {
     private val sessionManager = SessionManager(application)
     
-    var username by mutableStateOf("organizador_vip")
-    var password by mutableStateOf("prueba123")
+    var username by mutableStateOf("")
+    var password by mutableStateOf("")
     
     var isLoading by mutableStateOf(false)
     var error by mutableStateOf<String?>(null)
