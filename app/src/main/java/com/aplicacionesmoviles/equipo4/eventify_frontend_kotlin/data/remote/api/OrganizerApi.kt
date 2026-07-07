@@ -7,6 +7,9 @@ import retrofit2.http.*
 
 interface OrganizerApi {
     // Profiles
+    @GET("profiles")
+    suspend fun getAllProfiles(): Response<List<Profile>>
+
     @POST("profiles")
     suspend fun createProfile(@Body profile: Profile): Response<Profile>
 

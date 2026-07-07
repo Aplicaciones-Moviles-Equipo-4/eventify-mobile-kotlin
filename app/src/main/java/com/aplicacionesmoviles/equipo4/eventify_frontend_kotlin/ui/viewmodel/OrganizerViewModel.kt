@@ -27,7 +27,17 @@ class OrganizerViewModel(application: Application) : AndroidViewModel(applicatio
     // For Quote Detail
     var currentQuoteItems by mutableStateOf<List<ServiceItem>>(emptyList())
     var isLoadingItems by mutableStateOf(false)
-    
+
+    // Explore: public browsing of OTHER organizers. Kept in separate state so it never
+    // clobbers the logged-in organizer's own data (profile/catalogs/albums/reviews above).
+    var exploreProfiles by mutableStateOf<List<Profile>>(emptyList())
+    var isLoadingExplore by mutableStateOf(false)
+    var viewedProfile by mutableStateOf<Profile?>(null)
+    var viewedCatalogs by mutableStateOf<List<ServiceCatalog>>(emptyList())
+    var viewedAlbums by mutableStateOf<List<Album>>(emptyList())
+    var viewedReviews by mutableStateOf<List<Review>>(emptyList())
+    var isLoadingViewed by mutableStateOf(false)
+
     var isLoading by mutableStateOf(false)
     var error by mutableStateOf<String?>(null)
     
@@ -35,6 +45,58 @@ class OrganizerViewModel(application: Application) : AndroidViewModel(applicatio
 
     /** Email used to log in; reused as the Profile email so login can resolve the profileId. */
     val accountEmail: String? get() = sessionManager.accountEmail
+
+    /** Loads all ORGANIZER profiles (excluding the logged-in one) for the Explore tab. */
+    fun loadExploreProfiles() {
+        viewModelScope.launch {
+            isLoadingExplore = true
+            error = null
+            try {
+                val res = NetworkModule.organizerApi.getAllProfiles()
+                if (res.isSuccessful) {
+                    val myId = sessionManager.profileId
+                    exploreProfiles = (res.body() ?: emptyList())
+                        .filter { it.type.equals("ORGANIZER", ignoreCase = true) && it.id != myId }
+                } else {
+                    error = "Error al cargar organizadores: ${res.code()}"
+                }
+            } catch (e: Exception) {
+                error = "Error de red: ${e.localizedMessage}"
+            } finally {
+                isLoadingExplore = false
+            }
+        }
+    }
+
+    /** Loads the public detail (profile + services + portfolio + reviews) of another organizer. */
+    fun loadOrganizerDetail(profileId: Int) {
+        viewModelScope.launch {
+            isLoadingViewed = true
+            error = null
+            // Reset previous detail so a stale organizer isn't shown while loading.
+            viewedProfile = null
+            viewedCatalogs = emptyList()
+            viewedAlbums = emptyList()
+            viewedReviews = emptyList()
+            try {
+                val profileRes = NetworkModule.organizerApi.getProfile(profileId)
+                if (profileRes.isSuccessful) viewedProfile = profileRes.body()
+
+                val catalogsRes = NetworkModule.organizerApi.getServiceCatalogs(profileId)
+                if (catalogsRes.isSuccessful) viewedCatalogs = catalogsRes.body() ?: emptyList()
+
+                val albumsRes = NetworkModule.organizerApi.getAlbums(profileId)
+                if (albumsRes.isSuccessful) viewedAlbums = albumsRes.body() ?: emptyList()
+
+                val reviewsRes = NetworkModule.organizerApi.getProfileReviews(profileId)
+                if (reviewsRes.isSuccessful) viewedReviews = reviewsRes.body() ?: emptyList()
+            } catch (e: Exception) {
+                error = "Error de red: ${e.localizedMessage}"
+            } finally {
+                isLoadingViewed = false
+            }
+        }
+    }
 
     fun loadAllData() {
         val currentProfileId = sessionManager.profileId
